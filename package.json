@@ -11,9 +11,11 @@
   "dependencies": {
     "@octokit/auth-app": "^7.1.1",
     "@octokit/rest": "^21.0.1",
+    "@radix-ui/react-slot": "^1.2.4",
     "@stripe/stripe-js": "^4.1.0",
     "@supabase/ssr": "^0.10.3",
     "@supabase/supabase-js": "^2.44.4",
+    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^11.0.0",
     "next": "14.2.5",
@@ -21,6 +23,7 @@
     "react-dom": "^18",
     "resend": "^3.4.0",
     "stripe": "^16.2.0",
+    "tailwind-merge": "^3.6.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
