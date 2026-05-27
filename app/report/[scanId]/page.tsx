@@ -20,6 +20,8 @@ function formatDate(iso: string): string {
   }) + ' at ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
 }
 
+const REPORT_CSS = ``
+
 function overallRisk(result: ScanResult): SeverityLevel | null {
   if (result.criticalCount > 0) return 'critical'
   if (result.highCount > 0) return 'high'
@@ -345,10 +347,11 @@ export default async function ReportPage({ params }: ReportPageProps) {
     >
       {/* Nav */}
       <nav
+        className="report-nav"
         style={{
           borderBottom: '1px solid #e2deda',
           backgroundColor: '#ffffff',
-          padding: '0 40px',
+          padding: '0 24px',
           height: '56px',
           display: 'flex',
           alignItems: 'center',
@@ -358,90 +361,46 @@ export default async function ReportPage({ params }: ReportPageProps) {
           zIndex: 10,
         }}
       >
-        <Link
-          href="/"
-          style={{
-            fontFamily: "'Instrument Serif', Georgia, serif",
-            fontSize: '1.1rem',
-            color: '#111010',
-            textDecoration: 'none',
-          }}
-        >
+        <Link href="/" style={{ fontFamily: "'Instrument Serif', Georgia, serif", fontSize: '1.1rem', color: '#111010', textDecoration: 'none' }}>
           VibeSec
         </Link>
-        <Link
-          href="/dashboard"
-          style={{ color: '#444240', fontSize: '0.88rem', textDecoration: 'none' }}
-        >
+        <Link href="/dashboard" style={{ color: '#444240', fontSize: '0.88rem', textDecoration: 'none' }}>
           ← Dashboard
         </Link>
       </nav>
 
-      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '48px 24px 80px' }}>
-        {/* Header section */}
-        <div style={{ marginBottom: '32px' }}>
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'flex-start',
-              justifyContent: 'space-between',
-              gap: '24px',
-              flexWrap: 'wrap',
-              marginBottom: '12px',
-            }}
-          >
+      <div className="report-inner" style={{ maxWidth: '1100px', margin: '0 auto', padding: '40px 24px 80px' }}>
+        {/* Header */}
+        <div style={{ marginBottom: '28px' }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap', marginBottom: '10px' }}>
             <h1
-              style={{
-                fontFamily: "'Instrument Serif', Georgia, serif",
-                fontWeight: 400,
-                fontSize: '2.2rem',
-                color: '#111010',
-                margin: 0,
-                lineHeight: '1.15',
-              }}
+              className="report-title"
+              style={{ fontFamily: "'Instrument Serif', Georgia, serif", fontWeight: 400, fontSize: '2.2rem', color: '#111010', margin: 0, lineHeight: '1.15', wordBreak: 'break-word' }}
             >
               {displayName}
             </h1>
             {risk && <RiskBadge severity={risk} />}
           </div>
-
-          <div
-            style={{
-              display: 'flex',
-              gap: '20px',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-            }}
-          >
-            {job.site_url && (
-              <span style={{ fontSize: '0.85rem', color: '#888580' }}>{job.site_url}</span>
-            )}
-            {job.completed_at && (
-              <span style={{ fontSize: '0.85rem', color: '#888580' }}>
-                Scanned {formatDate(job.completed_at)}
-              </span>
-            )}
-            {!job.completed_at && (
-              <span style={{ fontSize: '0.85rem', color: '#888580' }}>
-                Started {formatDate(job.created_at)}
-              </span>
-            )}
+          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+            {job.site_url && <span style={{ fontSize: '0.83rem', color: '#888580', wordBreak: 'break-all' }}>{job.site_url}</span>}
+            {job.completed_at && <span style={{ fontSize: '0.83rem', color: '#888580' }}>Scanned {formatDate(job.completed_at)}</span>}
+            {!job.completed_at && <span style={{ fontSize: '0.83rem', color: '#888580' }}>Started {formatDate(job.created_at)}</span>}
           </div>
         </div>
 
-        {/* Summary bar */}
-        <div style={{ border: '1px solid #e2deda', backgroundColor: '#ffffff', display: 'flex', marginBottom: '40px' }}>
+        {/* Summary bar — 2×2 on mobile */}
+        <div className="report-summary" style={{ border: '1px solid #e2deda', backgroundColor: '#ffffff', display: 'flex', marginBottom: '36px' }}>
           {([
             { label: 'Critical', count: result.criticalCount, color: '#c0392b' },
             { label: 'High',     count: result.highCount,     color: '#e67e22' },
             { label: 'Medium',   count: result.mediumCount,   color: '#856404' },
             { label: 'Low',      count: result.lowCount,      color: '#5a9e6f' },
           ] as const).map((item, i) => (
-            <div key={item.label} style={{ flex: 1, padding: '20px 24px', borderLeft: i > 0 ? '1px solid #e2deda' : 'none', textAlign: 'center' }}>
-              <div style={{ fontFamily: "'Instrument Serif', Georgia, serif", fontSize: '2rem', color: item.count > 0 ? item.color : '#bbb8b4', fontWeight: 400, lineHeight: 1, marginBottom: '4px' }}>
+            <div key={item.label} className="report-summary-cell" style={{ flex: 1, padding: '16px 20px', borderLeft: i > 0 ? '1px solid #e2deda' : 'none', textAlign: 'center' }}>
+              <div style={{ fontFamily: "'Instrument Serif', Georgia, serif", fontSize: '1.8rem', color: item.count > 0 ? item.color : '#bbb8b4', fontWeight: 400, lineHeight: 1, marginBottom: '4px' }}>
                 <CountUp to={item.count} duration={1.0} />
               </div>
-              <div style={{ fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.07em', color: '#888580' }}>
+              <div style={{ fontSize: '0.68rem', textTransform: 'uppercase', letterSpacing: '0.07em', color: '#888580' }}>
                 {item.label}
               </div>
             </div>
@@ -491,54 +450,30 @@ export default async function ReportPage({ params }: ReportPageProps) {
             ))}
           </div>
         ) : (
-          /* Locked: two-column layout */
+          /* Locked: two-column layout — stacks on mobile, paywall first */
           <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: '60% 40%',
-              gap: '32px',
-              alignItems: 'start',
-            }}
+            className="report-locked-grid"
+            style={{ display: 'grid', gridTemplateColumns: '60% 40%', gap: '32px', alignItems: 'start' }}
           >
             {/* Findings column */}
             <div>
-              <p
-                style={{
-                  fontSize: '0.82rem',
-                  color: '#888580',
-                  fontWeight: 300,
-                  marginBottom: '20px',
-                }}
-              >
+              <p style={{ fontSize: '0.82rem', color: '#888580', fontWeight: 300, marginBottom: '20px' }}>
                 Showing 1 of {result.totalCount}{' '}
                 {result.totalCount === 1 ? 'vulnerability' : 'vulnerabilities'} — unlock to see all
               </p>
-
-              {/* Free preview finding */}
               {previewFinding && <FindingCard finding={previewFinding} delay={0} />}
-
-              {/* Locked findings */}
               {lockedStubs.map((f, i) => (
                 <LockedFinding key={f.id} severity={f.severity} file={f.file} index={i} delay={i * 0.06} />
               ))}
-
-              {/* Extra placeholders if counts don't match stored rows yet */}
               {result.totalCount > knownLockedRows &&
-                Array.from({ length: Math.max(0, result.totalCount - knownLockedRows) }).map(
-                  (_, i) => (
-                    <LockedFinding key={`placeholder-${i}`} severity="medium" file="…" index={i} />
-                  ),
-                )}
+                Array.from({ length: Math.max(0, result.totalCount - knownLockedRows) }).map((_, i) => (
+                  <LockedFinding key={`placeholder-${i}`} severity="medium" file="…" index={i} />
+                ))}
             </div>
 
             {/* Paywall column */}
-            <div>
-              <PaywallPanel
-                scanId={params.scanId}
-                totalCount={result.totalCount}
-                criticalCount={result.criticalCount}
-                highCount={result.highCount}
-              />
+            <div className="report-paywall-col">
+              <PaywallPanel scanId={params.scanId} totalCount={result.totalCount} criticalCount={result.criticalCount} highCount={result.highCount} />
             </div>
           </div>
         )}

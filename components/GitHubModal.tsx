@@ -78,7 +78,7 @@ export default function GitHubModal({ siteUrl, onClose, onConfirm, onDemo }: Git
           exit={{ opacity: 0, y: 12, scale: 0.97 }}
           transition={SPRING}
           onClick={(e) => e.stopPropagation()}
-          style={{ background: '#fff', width: '100%', maxWidth: '480px', border: '1px solid #e2deda', position: 'relative' }}
+          style={{ background: '#fff', width: '100%', maxWidth: '480px', border: '1px solid #e2deda', position: 'relative', maxHeight: '90svh', overflowY: 'auto' }}
         >
           {/* Close */}
           <button
@@ -92,7 +92,7 @@ export default function GitHubModal({ siteUrl, onClose, onConfirm, onDemo }: Git
           </button>
 
           {/* Top */}
-          <div style={{ padding: '36px 40px 28px', borderBottom: '1px solid #e2deda' }}>
+          <div style={{ padding: 'clamp(20px, 5vw, 36px) clamp(20px, 5vw, 40px) 24px', borderBottom: '1px solid #e2deda' }}>
             <p style={{ fontSize: '0.68rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: '#bbb8b4', marginBottom: '14px' }}>
               Step 2 of 2
             </p>
@@ -107,7 +107,7 @@ export default function GitHubModal({ siteUrl, onClose, onConfirm, onDemo }: Git
           </div>
 
           {/* Target */}
-          <div style={{ margin: '0 40px', padding: '14px 0', borderBottom: '1px solid #e2deda', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.8rem' }}>
+          <div style={{ margin: '0 clamp(16px, 5vw, 40px)', padding: '12px 0', borderBottom: '1px solid #e2deda', display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.8rem' }}>
             <span style={{ color: '#bbb8b4', fontSize: '0.72rem', whiteSpace: 'nowrap' }}>Target:</span>
             <span style={{ color: 'var(--ink)', fontWeight: 400, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {siteUrl || 'yourapp.vercel.app'}
@@ -115,7 +115,7 @@ export default function GitHubModal({ siteUrl, onClose, onConfirm, onDemo }: Git
           </div>
 
           {/* Permissions */}
-          <div style={{ padding: '20px 40px 0' }}>
+          <div style={{ padding: '16px clamp(16px, 5vw, 40px) 0' }}>
             <p style={{ fontSize: '0.68rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#bbb8b4', marginBottom: '14px' }}>
               Permissions requested
             </p>
@@ -147,7 +147,7 @@ export default function GitHubModal({ siteUrl, onClose, onConfirm, onDemo }: Git
           </div>
 
           {/* Footer */}
-          <div style={{ padding: '24px 40px 32px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div style={{ padding: 'clamp(16px, 5vw, 24px) clamp(16px, 5vw, 40px) clamp(20px, 5vw, 32px)', display: 'flex', flexDirection: 'column', gap: '10px' }}>
             {/* Ink-fill CTA */}
             <div style={{ position: 'relative', overflow: 'hidden', background: 'var(--ink)', cursor: 'pointer' }}>
               <motion.div

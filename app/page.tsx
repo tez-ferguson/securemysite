@@ -58,14 +58,23 @@ const PAGE_CSS = `
   .vs-tool-tag:hover { color: var(--ink); border-color: var(--ink3); }
   @media (max-width: 640px) {
     .vs-stats { flex-direction: column !important; }
-    .vs-stat-cell { border-right: none !important; border-bottom: 1px solid var(--border) !important; }
+    .vs-stat-cell { border-right: none !important; border-bottom: 1px solid var(--border) !important; padding: 16px 24px !important; }
     .vs-stat-cell:last-child { border-bottom: none !important; }
     .vs-hero-title { font-size: clamp(2rem, 8vw, 3.2rem) !important; }
-    .vs-hero-inner { padding: 72px 24px 56px !important; }
-    .vs-section-inner { padding-left: 24px !important; padding-right: 24px !important; }
-    .vs-steps-grid { grid-template-columns: 1fr !important; }
+    .vs-hero-inner { padding: 72px 20px 48px !important; }
+    .vs-section-inner { padding-left: 20px !important; padding-right: 20px !important; }
+    .vs-steps-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+    .vs-steps-grid .vs-step-num { display: none !important; }
     .vs-split-grid { grid-template-columns: 1fr !important; }
     .vs-pricing-grid { grid-template-columns: 1fr !important; }
+    .vs-section-pad { padding: 60px 20px !important; }
+    .vs-hero-sub { max-width: 100% !important; margin-bottom: 28px !important; }
+    .vs-input-dark { flex-wrap: wrap; }
+    .vs-input-prefix { display: none !important; }
+    .vs-input-submit { width: 100%; padding: 14px 16px !important; justify-content: center; }
+  }
+  @media (max-width: 380px) {
+    .vs-hero-title { font-size: 1.9rem !important; }
   }
 `
 
@@ -183,7 +192,7 @@ function HomeInner() {
           WebkitBackdropFilter: 'blur(12px)',
           borderBottom: '1px solid',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          padding: '20px 48px',
+          padding: 'clamp(14px, 3vw, 20px) clamp(16px, 4vw, 48px)',
         }}
       >
         <motion.div
@@ -281,6 +290,7 @@ function HomeInner() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 1.1, ease: EASE }}
               style={{ fontSize: '0.88rem', color: 'rgba(247,245,242,0.5)', lineHeight: 1.7, maxWidth: '400px', fontWeight: 300, marginBottom: '32px' }}
+              className="vs-hero-sub"
             >
               Lovable, Bolt, Cursor — they build fast. Security doesn&apos;t come included.
               Enter your site and we&apos;ll scan the codebase for what got missed.
@@ -294,7 +304,7 @@ function HomeInner() {
               style={{ width: '100%', maxWidth: '520px' }}
             >
               <div className={`vs-input-dark${inputError ? ' error' : ''}`}>
-                <span style={{ padding: '0 14px', display: 'flex', alignItems: 'center', fontSize: '0.82rem', color: 'rgba(247,245,242,0.25)', borderRight: '1px solid rgba(247,245,242,0.12)', background: 'rgba(247,245,242,0.03)', userSelect: 'none', whiteSpace: 'nowrap' }}>
+                <span className="vs-input-prefix" style={{ padding: '0 14px', display: 'flex', alignItems: 'center', fontSize: '0.82rem', color: 'rgba(247,245,242,0.25)', borderRight: '1px solid rgba(247,245,242,0.12)', background: 'rgba(247,245,242,0.03)', userSelect: 'none', whiteSpace: 'nowrap' }}>
                   https://
                 </span>
                 <input
@@ -317,7 +327,8 @@ function HomeInner() {
                   />
                   <button
                     onClick={handleScan}
-                    style={{ position: 'relative', zIndex: 1, padding: '0 22px', height: '100%', background: 'transparent', border: 'none', color: WARM, fontFamily: 'var(--sans)', fontSize: '0.8rem', fontWeight: 400, letterSpacing: '0.03em', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                    className="vs-input-submit"
+                    style={{ position: 'relative', zIndex: 1, padding: '0 22px', height: '100%', minHeight: '52px', background: 'transparent', border: 'none', color: WARM, fontFamily: 'var(--sans)', fontSize: '0.8rem', fontWeight: 400, letterSpacing: '0.03em', cursor: 'pointer', whiteSpace: 'nowrap' }}
                   >
                     Scan now
                   </button>
@@ -381,7 +392,7 @@ function HomeInner() {
 
         {/* ── HOW IT WORKS ── */}
         <section id="how-it-works" style={{ borderTop: '1px solid var(--border)' }}>
-          <div className="vs-section-inner" style={{ maxWidth: '1100px', margin: '0 auto', padding: '96px 48px' }}>
+          <div className="vs-section-inner vs-section-pad" style={{ maxWidth: '1100px', margin: '0 auto', padding: '96px 48px' }}>
             <ScrollReveal>
               <p style={{ fontSize: '0.68rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--ink4)', marginBottom: '16px' }}>How it works</p>
               <h2 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2rem, 4vw, 3.2rem)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)', lineHeight: 1.1, maxWidth: '560px', marginBottom: '80px' }}>
@@ -408,7 +419,7 @@ function HomeInner() {
 
         {/* ── WHAT WE SCAN ── */}
         <section id="what-we-scan" style={{ borderTop: '1px solid var(--border)', background: '#fff' }}>
-          <div className="vs-section-inner" style={{ maxWidth: '1100px', margin: '0 auto', padding: '96px 48px' }}>
+          <div className="vs-section-inner vs-section-pad" style={{ maxWidth: '1100px', margin: '0 auto', padding: '96px 48px' }}>
             <ScrollReveal>
               <p style={{ fontSize: '0.68rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--ink4)', marginBottom: '16px' }}>What we scan for</p>
               <h2 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2rem, 4vw, 3.2rem)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)', lineHeight: 1.1, maxWidth: '560px', marginBottom: '64px' }}>
@@ -433,7 +444,7 @@ function HomeInner() {
 
         {/* ── BUILT FOR VIBE CODERS ── */}
         <section style={{ borderTop: '1px solid var(--border)' }}>
-          <div className="vs-section-inner" style={{ maxWidth: '1100px', margin: '0 auto', padding: '96px 48px' }}>
+          <div className="vs-section-inner vs-section-pad" style={{ maxWidth: '1100px', margin: '0 auto', padding: '96px 48px' }}>
             <div className="vs-split-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '64px', alignItems: 'center' }}>
               <ScrollReveal>
                 <p style={{ fontSize: '0.68rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--ink4)', marginBottom: '16px' }}>Built for</p>
@@ -476,7 +487,7 @@ function HomeInner() {
 
         {/* ── PRICING TEASER — dark ── */}
         <section style={{ borderTop: '1px solid var(--border)', background: 'var(--ink)' }}>
-          <div className="vs-section-inner" style={{ maxWidth: '1100px', margin: '0 auto', padding: '96px 48px' }}>
+          <div className="vs-section-inner vs-section-pad" style={{ maxWidth: '1100px', margin: '0 auto', padding: '96px 48px' }}>
             <ScrollReveal>
               <p style={{ fontSize: '0.68rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(247,245,242,0.35)', marginBottom: '48px' }}>Pricing</p>
             </ScrollReveal>
@@ -513,7 +524,7 @@ function HomeInner() {
 
         {/* ── BOTTOM CTA ── */}
         <section style={{ borderTop: '1px solid var(--border)' }}>
-          <div className="vs-section-inner" style={{ maxWidth: '1100px', margin: '0 auto', padding: '120px 48px', textAlign: 'center' }}>
+          <div className="vs-section-inner vs-section-pad" style={{ maxWidth: '1100px', margin: '0 auto', padding: '120px 48px', textAlign: 'center' }}>
             <ScrollReveal>
               <p style={{ fontSize: '0.68rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--ink4)', marginBottom: '20px' }}>Ready when you are</p>
               <h2 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2.4rem, 5vw, 4.2rem)', fontWeight: 400, letterSpacing: '-0.025em', color: 'var(--ink)', lineHeight: 1.05, marginBottom: '40px' }}>
@@ -538,7 +549,7 @@ function HomeInner() {
         </section>
 
         {/* ── FOOTER ── */}
-        <footer style={{ borderTop: '1px solid var(--border)', padding: '24px 48px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+        <footer style={{ borderTop: '1px solid var(--border)', padding: 'clamp(16px, 3vw, 24px) clamp(16px, 4vw, 48px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
           <div style={{ fontFamily: 'var(--serif)', fontSize: '1rem', color: 'var(--ink)', letterSpacing: '-0.01em' }}>VibeSec</div>
           <div style={{ fontSize: '0.7rem', color: 'var(--ink4)', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ width: '5px', height: '5px', background: '#5a9e6f', borderRadius: '50%', display: 'inline-block' }} />

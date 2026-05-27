@@ -153,183 +153,71 @@ export default async function DashboardPage() {
   const hasScans = rows.length > 0
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        backgroundColor: '#f7f5f2',
-        fontFamily: "'DM Sans', sans-serif",
-      }}
-    >
-      {/* Nav */}
-      <nav
-        style={{
-          borderBottom: '1px solid #e2deda',
-          backgroundColor: '#ffffff',
-          padding: '0 40px',
-          height: '56px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <Link
-          href="/"
-          style={{
-            fontFamily: "'Instrument Serif', Georgia, serif",
-            fontSize: '1.1rem',
-            color: '#111010',
-            textDecoration: 'none',
-          }}
+    <div style={{ minHeight: '100vh', backgroundColor: '#f7f5f2', fontFamily: "'DM Sans', sans-serif" }}>
+        {/* Nav */}
+        <nav
+          className="dash-nav"
+          style={{ borderBottom: '1px solid #e2deda', backgroundColor: '#ffffff', padding: '0 24px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
         >
-          VibeSec
-        </Link>
-        <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-          <Link
-            href="/pricing"
-            style={{ color: '#444240', fontSize: '0.88rem', textDecoration: 'none' }}
-          >
-            Pricing
+          <Link href="/" style={{ fontFamily: "'Instrument Serif', Georgia, serif", fontSize: '1.1rem', color: '#111010', textDecoration: 'none' }}>
+            VibeSec
           </Link>
-          <Link
-            href="/"
-            style={{
-              backgroundColor: '#111010',
-              color: '#ffffff',
-              padding: '8px 18px',
-              fontSize: '0.88rem',
-              textDecoration: 'none',
-            }}
-          >
-            New scan
-          </Link>
-        </div>
-      </nav>
-
-      <div style={{ maxWidth: '960px', margin: '0 auto', padding: '56px 24px 96px' }}>
-        {/* Page heading */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            marginBottom: '40px',
-            flexWrap: 'wrap',
-            gap: '16px',
-          }}
-        >
-          <h1
-            style={{
-              fontFamily: "'Instrument Serif', Georgia, serif",
-              fontWeight: 400,
-              fontSize: '2.2rem',
-              color: '#111010',
-              margin: 0,
-            }}
-          >
-            Your scans
-          </h1>
-          {hasScans && (
-            <Link
-              href="/"
-              style={{
-                backgroundColor: '#111010',
-                color: '#ffffff',
-                padding: '10px 20px',
-                fontSize: '0.88rem',
-                textDecoration: 'none',
-              }}
-            >
-              + New scan
+          <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+            <Link href="/pricing" style={{ color: '#444240', fontSize: '0.85rem', textDecoration: 'none' }}>
+              Pricing
             </Link>
+            <Link href="/" style={{ backgroundColor: '#111010', color: '#ffffff', padding: '7px 16px', fontSize: '0.85rem', textDecoration: 'none' }}>
+              New scan
+            </Link>
+          </div>
+        </nav>
+
+        <div className="dash-inner" style={{ maxWidth: '960px', margin: '0 auto', padding: '48px 24px 80px' }}>
+          {/* Page heading */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px', flexWrap: 'wrap', gap: '12px' }}>
+            <h1 className="dash-h1" style={{ fontFamily: "'Instrument Serif', Georgia, serif", fontWeight: 400, fontSize: '2.2rem', color: '#111010', margin: 0 }}>
+              Your scans
+            </h1>
+            {hasScans && (
+              <Link href="/" style={{ backgroundColor: '#111010', color: '#ffffff', padding: '9px 18px', fontSize: '0.85rem', textDecoration: 'none' }}>
+                + New scan
+              </Link>
+            )}
+          </div>
+
+          {/* Empty state */}
+          {!hasScans && (
+            <div className="dash-empty" style={{ backgroundColor: '#ffffff', border: '1px solid #e2deda', padding: '64px 40px', textAlign: 'center' }}>
+              <p style={{ fontFamily: "'Instrument Serif', Georgia, serif", fontSize: '1.4rem', color: '#111010', margin: '0 0 8px 0' }}>
+                No scans yet
+              </p>
+              <p style={{ fontWeight: 300, fontSize: '0.88rem', color: '#888580', margin: '0 0 28px 0' }}>
+                Scan your first app to find security vulnerabilities.
+              </p>
+              <Link href="/" style={{ display: 'inline-block', backgroundColor: '#111010', color: '#ffffff', padding: '12px 28px', fontSize: '0.9rem', textDecoration: 'none' }}>
+                Scan your first app →
+              </Link>
+            </div>
+          )}
+
+          {/* Scans table */}
+          {hasScans && (
+            <div style={{ backgroundColor: '#ffffff', border: '1px solid #e2deda' }}>
+              {/* Table header — hidden on mobile via DashboardRows CSS */}
+              <div
+                className="dash-table-header"
+                style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 70px 90px 120px 100px', padding: '12px 24px', borderBottom: '1px solid #e2deda', backgroundColor: '#faf9f7', gap: '16px' }}
+              >
+                {['Repo', 'Scanned', 'Issues', 'Risk', 'Status', 'Action'].map((col) => (
+                  <span key={col} style={{ fontFamily: "'DM Sans', sans-serif", fontSize: '0.68rem', fontWeight: 400, color: '#888580', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                    {col}
+                  </span>
+                ))}
+              </div>
+              <DashboardRows rows={rows} />
+            </div>
           )}
         </div>
-
-        {/* Empty state */}
-        {!hasScans && (
-          <div
-            style={{
-              backgroundColor: '#ffffff',
-              border: '1px solid #e2deda',
-              padding: '72px 48px',
-              textAlign: 'center',
-            }}
-          >
-            <p
-              style={{
-                fontFamily: "'Instrument Serif', Georgia, serif",
-                fontSize: '1.4rem',
-                color: '#111010',
-                margin: '0 0 8px 0',
-              }}
-            >
-              No scans yet
-            </p>
-            <p
-              style={{
-                fontWeight: 300,
-                fontSize: '0.88rem',
-                color: '#888580',
-                margin: '0 0 32px 0',
-              }}
-            >
-              Scan your first app to find security vulnerabilities.
-            </p>
-            <Link
-              href="/"
-              style={{
-                display: 'inline-block',
-                backgroundColor: '#111010',
-                color: '#ffffff',
-                padding: '12px 28px',
-                fontSize: '0.9rem',
-                textDecoration: 'none',
-              }}
-            >
-              Scan your first app →
-            </Link>
-          </div>
-        )}
-
-        {/* Scans table */}
-        {hasScans && (
-          <div
-            style={{
-              backgroundColor: '#ffffff',
-              border: '1px solid #e2deda',
-            }}
-          >
-            {/* Table header */}
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: '2fr 1fr 80px 90px 130px 100px',
-                padding: '12px 24px',
-                borderBottom: '1px solid #e2deda',
-                backgroundColor: '#faf9f7',
-                gap: '16px',
-              }}
-            >
-              {['Repo', 'Scanned', 'Findings', 'Risk', 'Status', 'Action'].map((col) => (
-                <span
-                  key={col}
-                  style={{
-                    fontFamily: "'DM Sans', sans-serif",
-                    fontSize: '0.72rem',
-                    fontWeight: 400,
-                    color: '#888580',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.06em',
-                  }}
-                >
-                  {col}
-                </span>
-              ))}
-            </div>
-
-            <DashboardRows rows={rows} />
-          </div>
-        )}
-      </div>
     </div>
   )
 }

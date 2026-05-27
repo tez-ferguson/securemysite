@@ -65,16 +65,38 @@ function RiskBadge({ severity }: { severity: SeverityLevel }) {
 
 const STATUS_MAP: Record<ScanStatus, { label: string; color: string }> = {
   locked:          { label: 'Locked',          color: '#bbb8b4' },
-  report_unlocked: { label: 'Report unlocked', color: '#5a9e6f' },
-  fix_in_progress: { label: 'Fix in progress', color: '#e67e22' },
-  fix_complete:    { label: 'Fix complete',     color: '#5a9e6f' },
+  report_unlocked: { label: 'Unlocked',         color: '#5a9e6f' },
+  fix_in_progress: { label: 'Fix in progress',  color: '#e67e22' },
+  fix_complete:    { label: 'Fix complete',      color: '#5a9e6f' },
 }
 
 const EASE = [0.16, 1, 0.3, 1] as const
 
+const ROW_CSS = `
+  .dash-row-desktop {
+    display: grid;
+    grid-template-columns: 2fr 1fr 70px 90px 120px 100px;
+    padding: 16px 24px;
+    align-items: center;
+    gap: 16px;
+  }
+  .dash-row-mobile {
+    display: none;
+    padding: 16px 20px;
+    flex-direction: column;
+    gap: 8px;
+  }
+  @media (max-width: 680px) {
+    .dash-row-desktop { display: none !important; }
+    .dash-row-mobile  { display: flex !important; }
+    .dash-header      { display: none !important; }
+  }
+`
+
 export default function DashboardRows({ rows }: { rows: ScanRow[] }) {
   return (
     <>
+      <style>{ROW_CSS}</style>
       {rows.map((row, i) => {
         const risk = riskLevel(row)
         const status = scanStatus(row)
@@ -82,6 +104,7 @@ export default function DashboardRows({ rows }: { rows: ScanRow[] }) {
         const isRunning = row.status === 'queued' || row.status === 'running'
         const isFailed = row.status === 'failed'
         const { label: statusLabel, color: statusColor } = STATUS_MAP[status]
+        const borderBottom = i < rows.length - 1 ? '1px solid #e2deda' : 'none'
 
         return (
           <motion.div
@@ -89,56 +112,78 @@ export default function DashboardRows({ rows }: { rows: ScanRow[] }) {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35, delay: i * 0.04, ease: EASE }}
-            style={{ display: 'grid', gridTemplateColumns: '2fr 1fr 80px 90px 130px 100px', padding: '16px 24px', borderBottom: i < rows.length - 1 ? '1px solid #e2deda' : 'none', alignItems: 'center', gap: '16px' }}
           >
-            {/* Repo */}
-            <div>
-              <div style={{ fontFamily: 'var(--sans)', fontWeight: 400, fontSize: '0.9rem', color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                {displayName}
-              </div>
-              {row.site_url && (
-                <div style={{ fontFamily: 'monospace', fontSize: '0.72rem', color: '#bbb8b4', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  {row.site_url}
+            {/* ── Desktop row ── */}
+            <div className="dash-row-desktop" style={{ borderBottom }}>
+              <div>
+                <div style={{ fontFamily: 'var(--sans)', fontWeight: 400, fontSize: '0.9rem', color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {displayName}
                 </div>
-              )}
-            </div>
+                {row.site_url && (
+                  <div style={{ fontFamily: 'monospace', fontSize: '0.7rem', color: '#bbb8b4', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {row.site_url}
+                  </div>
+                )}
+              </div>
 
-            {/* Scanned */}
-            <span style={{ fontSize: '0.83rem', color: 'var(--ink3)', fontWeight: 300 }}>
-              {formatDate(row.completed_at ?? row.created_at)}
-            </span>
+              <span style={{ fontSize: '0.82rem', color: 'var(--ink3)', fontWeight: 300 }}>
+                {formatDate(row.completed_at ?? row.created_at)}
+              </span>
 
-            {/* Count */}
-            <span style={{ fontSize: '0.88rem', color: isRunning ? '#bbb8b4' : (row.total_count ?? 0) > 0 ? '#c0392b' : '#5a9e6f', fontWeight: 300 }}>
-              {isRunning ? '—' : (row.total_count ?? 0)}
-            </span>
+              <span style={{ fontSize: '0.88rem', color: isRunning ? '#bbb8b4' : (row.total_count ?? 0) > 0 ? '#c0392b' : '#5a9e6f', fontWeight: 300 }}>
+                {isRunning ? '—' : (row.total_count ?? 0)}
+              </span>
 
-            {/* Risk */}
-            <div>
-              {isRunning && <span style={{ fontSize: '0.78rem', color: '#bbb8b4' }}>Scanning…</span>}
-              {isFailed && <span style={{ fontSize: '0.78rem', color: '#c0392b' }}>Failed</span>}
-              {!isRunning && !isFailed && risk && <RiskBadge severity={risk} />}
-              {!isRunning && !isFailed && !risk && <span style={{ fontSize: '0.78rem', color: '#5a9e6f' }}>Clean</span>}
-            </div>
+              <div>
+                {isRunning && <span style={{ fontSize: '0.75rem', color: '#bbb8b4' }}>Scanning…</span>}
+                {isFailed && <span style={{ fontSize: '0.75rem', color: '#c0392b' }}>Failed</span>}
+                {!isRunning && !isFailed && risk && <RiskBadge severity={risk} />}
+                {!isRunning && !isFailed && !risk && <span style={{ fontSize: '0.75rem', color: '#5a9e6f' }}>Clean</span>}
+              </div>
 
-            {/* Status */}
-            <div>
-              {isRunning
-                ? <span style={{ fontSize: '0.85rem', color: '#e67e22', fontWeight: 300 }}>Scanning…</span>
-                : isFailed
-                ? <span style={{ fontSize: '0.85rem', color: '#c0392b', fontWeight: 300 }}>Failed</span>
-                : <span style={{ fontSize: '0.85rem', color: statusColor, fontWeight: 300 }}>{statusLabel}</span>
-              }
-            </div>
+              <span style={{ fontSize: '0.82rem', color: isRunning ? '#e67e22' : isFailed ? '#c0392b' : statusColor, fontWeight: 300 }}>
+                {isRunning ? 'Scanning…' : isFailed ? 'Failed' : statusLabel}
+              </span>
 
-            {/* Action */}
-            <div>
               <Link href={`/report/${row.id}`} style={{ fontSize: '0.85rem', color: 'var(--ink)', textDecoration: 'none', fontWeight: 400, transition: 'opacity 0.15s' }}
-                onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.6')}
+                onMouseEnter={(e) => (e.currentTarget.style.opacity = '0.55')}
                 onMouseLeave={(e) => (e.currentTarget.style.opacity = '1')}
               >
-                View report →
+                View →
               </Link>
+            </div>
+
+            {/* ── Mobile card ── */}
+            <div className="dash-row-mobile" style={{ borderBottom }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontFamily: 'var(--sans)', fontWeight: 400, fontSize: '0.92rem', color: 'var(--ink)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {displayName}
+                  </div>
+                  <div style={{ fontSize: '0.72rem', color: '#bbb8b4', marginTop: '2px' }}>
+                    {formatDate(row.completed_at ?? row.created_at)}
+                  </div>
+                </div>
+                {!isRunning && !isFailed && risk && <RiskBadge severity={risk} />}
+                {isRunning && <span style={{ fontSize: '0.72rem', color: '#e67e22', flexShrink: 0 }}>Scanning…</span>}
+                {isFailed && <span style={{ fontSize: '0.72rem', color: '#c0392b', flexShrink: 0 }}>Failed</span>}
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                  {!isRunning && (
+                    <span style={{ fontSize: '0.82rem', color: (row.total_count ?? 0) > 0 ? '#c0392b' : '#5a9e6f', fontFamily: 'var(--serif)' }}>
+                      {row.total_count ?? 0} {(row.total_count ?? 0) === 1 ? 'issue' : 'issues'}
+                    </span>
+                  )}
+                  <span style={{ fontSize: '0.78rem', color: isRunning ? '#e67e22' : isFailed ? '#c0392b' : statusColor, fontWeight: 300 }}>
+                    {isRunning ? 'Scanning…' : isFailed ? 'Failed' : statusLabel}
+                  </span>
+                </div>
+                <Link href={`/report/${row.id}`} style={{ fontSize: '0.85rem', color: 'var(--ink)', textDecoration: 'none', fontWeight: 400 }}>
+                  View report →
+                </Link>
+              </div>
             </div>
           </motion.div>
         )

@@ -108,38 +108,38 @@ export default function PricingPage() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--sans)' }}>
       {/* Nav */}
-      <nav style={{ borderBottom: '1px solid var(--border)', backgroundColor: 'var(--white)', padding: '0 40px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+      <nav style={{ borderBottom: '1px solid var(--border)', backgroundColor: 'var(--white)', padding: '0 clamp(16px, 4vw, 40px)', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Link href="/" style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', color: 'var(--ink)', textDecoration: 'none' }}>VibeSec</Link>
-        <div style={{ display: 'flex', gap: '28px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
           {user ? (
-            <Link href="/dashboard" style={{ color: 'var(--ink2)', fontSize: '0.88rem', textDecoration: 'none' }}>Dashboard</Link>
+            <Link href="/dashboard" style={{ color: 'var(--ink2)', fontSize: '0.85rem', textDecoration: 'none' }}>Dashboard</Link>
           ) : (
-            <Link href="/sign-in" style={{ color: 'var(--ink2)', fontSize: '0.88rem', textDecoration: 'none' }}>Sign in</Link>
+            <Link href="/sign-in" style={{ color: 'var(--ink2)', fontSize: '0.85rem', textDecoration: 'none' }}>Sign in</Link>
           )}
-          <Link href="/" style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: '8px 18px', fontSize: '0.88rem', textDecoration: 'none' }}>
+          <Link href="/" style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: '7px 16px', fontSize: '0.85rem', textDecoration: 'none' }}>
             Get started
           </Link>
         </div>
       </nav>
 
-      <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '72px 24px 96px' }}>
+      <div style={{ maxWidth: '1000px', margin: '0 auto', padding: 'clamp(40px, 8vw, 72px) clamp(16px, 4vw, 24px) 80px' }}>
         {/* Heading */}
         <motion.div
           initial={{ opacity: 0, y: 14 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: EASE }}
-          style={{ textAlign: 'center', marginBottom: '60px' }}
+          style={{ textAlign: 'center', marginBottom: 'clamp(36px, 6vw, 60px)' }}
         >
-          <h1 style={{ fontFamily: 'var(--serif)', fontWeight: 400, fontSize: '2.8rem', color: 'var(--ink)', margin: '0 0 16px 0', lineHeight: '1.1' }}>
+          <h1 style={{ fontFamily: 'var(--serif)', fontWeight: 400, fontSize: 'clamp(2rem, 5vw, 2.8rem)', color: 'var(--ink)', margin: '0 0 14px 0', lineHeight: '1.1' }}>
             Simple, per-scan pricing
           </h1>
-          <p style={{ fontWeight: 300, fontSize: '1rem', color: 'var(--ink3)', margin: 0, lineHeight: '1.6' }}>
+          <p style={{ fontWeight: 300, fontSize: '0.95rem', color: 'var(--ink3)', margin: 0, lineHeight: '1.6' }}>
             No subscriptions. Pay only for the scans you need.
           </p>
         </motion.div>
 
-        {/* Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', border: '1px solid var(--border)' }}>
+        {/* Cards — single column on mobile */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', border: '1px solid var(--border)' }}>
           {CARDS.map((card, cardIdx) => (
             <motion.div
               key={card.title}
@@ -148,9 +148,10 @@ export default function PricingPage() {
               transition={{ duration: 0.5, delay: cardIdx * 0.1, ease: EASE }}
               style={{
                 backgroundColor: 'var(--white)',
-                padding: '40px',
+                padding: 'clamp(24px, 5vw, 40px)',
                 borderRight: cardIdx < CARDS.length - 1 ? '1px solid var(--border)' : 'none',
-                border: card.featured ? '1px solid var(--ink)' : undefined,
+                borderBottom: '1px solid var(--border)',
+                border: card.featured ? '2px solid var(--ink)' : undefined,
                 margin: card.featured ? '-1px' : undefined,
                 position: 'relative' as const,
                 zIndex: card.featured ? 1 : 0,
