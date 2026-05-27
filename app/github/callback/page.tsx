@@ -1,0 +1,271 @@
+'use client'
+
+import { Suspense, useEffect, useState } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useUser } from '@clerk/nextjs'
+import Link from 'next/link'
+import { normalizeSiteUrl } from '@/lib/url'
+
+function decodeState(b64: string): { siteUrl?: string } {
+  try {
+    return JSON.parse(decodeURIComponent(escape(atob(b64))))
+  } catch {
+    return {}
+  }
+}
+
+function CallbackInner() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const { isSignedIn, isLoaded } = useUser()
+
+  const installationId = searchParams.get('installation_id')
+  const stateParam = searchParams.get('state')
+
+  const [repos, setRepos] = useState<{ fullName: string; cloneUrl: string }[]>([])
+  const [selected, setSelected] = useState('')
+  const [siteUrlField, setSiteUrlField] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
+
+  useEffect(() => {
+    if (!stateParam) return
+    const { siteUrl: s } = decodeState(stateParam)
+    if (s) setSiteUrlField(normalizeSiteUrl(s))
+  }, [stateParam])
+
+  useEffect(() => {
+    if (!isLoaded) return
+    if (!isSignedIn) {
+      const here = typeof window !== 'undefined' ? window.location.href : '/github/callback'
+      router.push(`/sign-in?redirect_url=${encodeURIComponent(here)}`)
+      return
+    }
+    if (!installationId) {
+      setError('Missing installation from GitHub. Try connecting again from the home page.')
+      setLoading(false)
+      return
+    }
+
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await fetch(`/api/github/installations/${installationId}/repos`)
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.error || 'Could not list repositories')
+        if (cancelled) return
+        const list = data.repos as { fullName: string; cloneUrl: string }[]
+        setRepos(list)
+        if (list.length === 1) setSelected(list[0].cloneUrl)
+      } catch (e: unknown) {
+        if (!cancelled) setError(e instanceof Error ? e.message : 'Something went wrong')
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [isLoaded, isSignedIn, installationId, router])
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!installationId || !selected) return
+    const site = normalizeSiteUrl(siteUrlField.trim())
+    if (!site) {
+      setError('Enter the deployed site URL for this scan.')
+      return
+    }
+
+    setSubmitting(true)
+    setError(null)
+    try {
+      const res = await fetch('/api/scans/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          repoUrl: selected,
+          siteUrl: site,
+          githubInstallationId: installationId,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Could not create scan')
+      try {
+        sessionStorage.setItem('vibesec_pending_site', site)
+      } catch {
+        /* ignore */
+      }
+      router.push(`/?scan=${encodeURIComponent(data.scanId)}`)
+    } catch (e: unknown) {
+      setSubmitting(false)
+      setError(e instanceof Error ? e.message : 'Could not create scan')
+    }
+  }
+
+  return (
+    <div
+      style={{
+        minHeight: '100vh',
+        backgroundColor: '#f7f5f2',
+        color: '#111010',
+        fontFamily: "'DM Sans', sans-serif",
+        fontWeight: 300,
+        padding: '48px 24px',
+      }}
+    >
+      <nav
+        style={{
+          marginBottom: 40,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          maxWidth: 520,
+          marginLeft: 'auto',
+          marginRight: 'auto',
+        }}
+      >
+        <Link
+          href="/"
+          style={{
+            fontFamily: "'Instrument Serif', Georgia, serif",
+            fontSize: '1.15rem',
+            color: '#111010',
+            textDecoration: 'none',
+          }}
+        >
+          VibeSec
+        </Link>
+        <Link href="/" style={{ fontSize: '0.8rem', color: '#888580', textDecoration: 'none' }}>
+          ← Home
+        </Link>
+      </nav>
+
+      <div style={{ maxWidth: 520, margin: '0 auto' }}>
+        <h1
+          style={{
+            fontFamily: "'Instrument Serif', Georgia, serif",
+            fontSize: '1.85rem',
+            fontWeight: 400,
+            marginBottom: 12,
+            letterSpacing: '-0.02em',
+          }}
+        >
+          Choose a repository
+        </h1>
+        <p style={{ fontSize: '0.88rem', color: '#888580', lineHeight: 1.65, marginBottom: 28 }}>
+          GitHub authorized this installation. Pick the repo that powers your deployed site —
+          then we&apos;ll queue the scan.
+        </p>
+
+        {loading && <p style={{ color: '#888580', fontSize: '0.9rem' }}>Loading repositories…</p>}
+
+        {error && (
+          <p style={{ color: '#c0392b', fontSize: '0.88rem', marginBottom: 20 }}>{error}</p>
+        )}
+
+        {!loading && !error && repos.length === 0 && (
+          <p style={{ fontSize: '0.88rem', color: '#888580', marginBottom: 24 }}>
+            No repositories are visible for this installation. Re-install the GitHub App and grant
+            access to at least one repository.
+          </p>
+        )}
+
+        {!loading && repos.length > 0 && (
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+            <label style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <span style={{ fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#bbb8b4' }}>
+                Repository
+              </span>
+              <select
+                required
+                value={selected}
+                onChange={(e) => setSelected(e.target.value)}
+                style={{
+                  padding: '12px 14px',
+                  border: '1px solid #e2deda',
+                  background: '#ffffff',
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: '0.88rem',
+                  color: '#111010',
+                }}
+              >
+                <option value="">Select a repository…</option>
+                {repos.map((r) => (
+                  <option key={r.fullName} value={r.cloneUrl}>
+                    {r.fullName}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <span style={{ fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#bbb8b4' }}>
+                Deployed site URL
+              </span>
+              <input
+                type="text"
+                required
+                value={siteUrlField}
+                onChange={(e) => setSiteUrlField(e.target.value)}
+                placeholder="https://yourapp.vercel.app"
+                style={{
+                  padding: '12px 14px',
+                  border: '1px solid #e2deda',
+                  background: '#ffffff',
+                  fontFamily: "'DM Sans', sans-serif",
+                  fontSize: '0.88rem',
+                  color: '#111010',
+                }}
+              />
+            </label>
+
+            <button
+              type="submit"
+              disabled={submitting || !selected}
+              style={{
+                marginTop: 8,
+                padding: '14px 22px',
+                background: submitting ? '#444240' : '#111010',
+                color: '#ffffff',
+                border: '1px solid #111010',
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: '0.88rem',
+                fontWeight: 400,
+                cursor: submitting ? 'wait' : 'pointer',
+              }}
+            >
+              {submitting ? 'Starting scan…' : 'Start security scan'}
+            </button>
+          </form>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export default function GitHubCallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <div
+          style={{
+            minHeight: '100vh',
+            backgroundColor: '#f7f5f2',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontFamily: "'DM Sans', sans-serif",
+            color: '#888580',
+          }}
+        >
+          Loading…
+        </div>
+      }
+    >
+      <CallbackInner />
+    </Suspense>
+  )
+}

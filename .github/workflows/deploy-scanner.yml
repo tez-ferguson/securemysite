@@ -1,0 +1,30 @@
+name: Deploy Modal scanner
+
+on:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'scanner/**'
+      - '.github/workflows/deploy-scanner.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Modal
+        run: pip install modal
+
+      - name: Modal deploy
+        working-directory: scanner
+        env:
+          MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+          MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+        run: modal deploy app.py
