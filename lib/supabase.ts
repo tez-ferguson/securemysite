@@ -1,19 +1,12 @@
-import { createClient } from '@supabase/supabase-js'
+// Re-export all functions from the split files for backwards compatibility
+// with existing imports of '@/lib/supabase'.
+//
+// Server-only functions (createServerSupabaseClient, createMiddlewareClient,
+// createServiceClient) require next/headers and must NOT be imported in client
+// components. They are safe to use in Server Components, API routes, and
+// middleware.
+//
+// Client-safe functions (createBrowserClient) can be used anywhere.
 
-// Browser client (uses anon key, respects RLS)
-export function createBrowserClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
-}
-
-// Server-only admin client (uses service role key, bypasses RLS)
-// NEVER import this in client components
-export function createServiceClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { autoRefreshToken: false, persistSession: false } }
-  )
-}
+export { createServerSupabaseClient, createMiddlewareClient, createServiceClient } from './supabase.server'
+export { createBrowserClient } from './supabase.client'

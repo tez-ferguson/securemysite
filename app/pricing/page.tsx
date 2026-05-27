@@ -2,7 +2,9 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { useUser, SignInButton } from '@clerk/nextjs'
+import { useEffect, useState } from 'react'
+import { createBrowserClient } from '@/lib/supabase.client'
+import type { User } from '@supabase/supabase-js'
 
 const EASE = [0.16, 1, 0.3, 1] as const
 
@@ -97,7 +99,11 @@ const CARDS = [
 ]
 
 export default function PricingPage() {
-  const { isSignedIn } = useUser()
+  const [user, setUser] = useState<User | null>(null)
+  useEffect(() => {
+    const supabase = createBrowserClient()
+    supabase.auth.getUser().then(({ data }) => setUser(data.user))
+  }, [])
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--sans)' }}>
@@ -105,12 +111,10 @@ export default function PricingPage() {
       <nav style={{ borderBottom: '1px solid var(--border)', backgroundColor: 'var(--white)', padding: '0 40px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Link href="/" style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', color: 'var(--ink)', textDecoration: 'none' }}>VibeSec</Link>
         <div style={{ display: 'flex', gap: '28px', alignItems: 'center' }}>
-          {isSignedIn ? (
+          {user ? (
             <Link href="/dashboard" style={{ color: 'var(--ink2)', fontSize: '0.88rem', textDecoration: 'none' }}>Dashboard</Link>
           ) : (
-            <SignInButton mode="modal">
-              <button style={{ fontSize: '0.88rem', color: 'var(--ink2)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)' }}>Sign in</button>
-            </SignInButton>
+            <Link href="/sign-in" style={{ color: 'var(--ink2)', fontSize: '0.88rem', textDecoration: 'none' }}>Sign in</Link>
           )}
           <Link href="/" style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: '8px 18px', fontSize: '0.88rem', textDecoration: 'none' }}>
             Get started

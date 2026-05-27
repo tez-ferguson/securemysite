@@ -1,5 +1,5 @@
-import { auth } from '@clerk/nextjs/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { requireAuth } from '@/lib/auth'
 import { stripe, PRICES } from '@/lib/stripe'
 import { createServiceClient } from '@/lib/supabase'
 import { z } from 'zod'
@@ -10,8 +10,9 @@ const schema = z.object({
 })
 
 export async function POST(req: NextRequest) {
-  const { userId } = auth()
-  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const auth = await requireAuth()
+  if (auth instanceof NextResponse) return auth
+  const { userId } = auth
 
   const body = await req.json()
   const parsed = schema.safeParse(body)
@@ -20,7 +21,6 @@ export async function POST(req: NextRequest) {
   const { scanId, type } = parsed.data
   const supabase = createServiceClient()
 
-  // Verify scan ownership
   const { data: job } = await supabase
     .from('scan_jobs')
     .select('id, user_id, repo_name')
@@ -31,21 +31,14 @@ export async function POST(req: NextRequest) {
   if (job.user_id !== userId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
   const price = type === 'report' ? PRICES.report : PRICES.agent_fix
-  const label = type === 'report' ? 'Report Unlock' : 'Agent Fix'
 
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
     line_items: [{ price, quantity: 1 }],
     success_url: `${process.env.NEXT_PUBLIC_APP_URL}/report/${scanId}?payment=success`,
     cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/report/${scanId}?payment=cancelled`,
-    metadata: {
-      scanId,
-      userId,
-      type,
-    },
-    payment_intent_data: {
-      metadata: { scanId, userId, type },
-    },
+    metadata: { scanId, userId, type },
+    payment_intent_data: { metadata: { scanId, userId, type } },
   })
 
   return NextResponse.json({ checkoutUrl: session.url })

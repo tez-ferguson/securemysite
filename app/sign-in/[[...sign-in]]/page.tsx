@@ -1,145 +1,145 @@
-import { SignIn } from '@clerk/nextjs'
-import Link from 'next/link'
+'use client'
 
-export default function SignInPage() {
+import { useState } from 'react'
+import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { motion } from 'framer-motion'
+import { createBrowserClient } from '@/lib/supabase.client'
+import { Suspense } from 'react'
+
+const EASE = [0.16, 1, 0.3, 1] as const
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  padding: '12px 14px',
+  border: '1px solid #e2deda',
+  background: '#fff',
+  fontFamily: 'var(--sans)',
+  fontSize: '0.9rem',
+  fontWeight: 300,
+  color: '#111010',
+  outline: 'none',
+  boxSizing: 'border-box',
+  transition: 'border-color 0.15s, box-shadow 0.15s',
+}
+
+function SignInForm() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const redirectUrl = searchParams.get('redirect_url') ?? '/dashboard'
+
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+
+    const supabase = createBrowserClient()
+    const { error: err } = await supabase.auth.signInWithPassword({ email, password })
+
+    if (err) {
+      setError(err.message)
+      setLoading(false)
+      return
+    }
+
+    router.push(redirectUrl)
+    router.refresh()
+  }
+
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        backgroundColor: '#f7f5f2',
-        fontFamily: "'DM Sans', sans-serif",
-      }}
-    >
-      {/* Nav */}
-      <nav
-        style={{
-          borderBottom: '1px solid #e2deda',
-          backgroundColor: '#ffffff',
-          padding: '0 40px',
-          height: '56px',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}
-      >
-        <Link
-          href="/"
-          style={{
-            fontFamily: "'Instrument Serif', Georgia, serif",
-            fontSize: '1.1rem',
-            color: '#111010',
-            textDecoration: 'none',
-          }}
-        >
-          VibeSec
-        </Link>
-        <Link
-          href="/sign-up"
-          style={{ color: '#444240', fontSize: '0.88rem', textDecoration: 'none' }}
-        >
+    <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--sans)' }}>
+      <nav style={{ borderBottom: '1px solid var(--border)', backgroundColor: 'var(--white)', padding: '0 40px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Link href="/" style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', color: 'var(--ink)', textDecoration: 'none' }}>VibeSec</Link>
+        <Link href="/sign-up" style={{ color: 'var(--ink2)', fontSize: '0.88rem', textDecoration: 'none' }}>
           Create account →
         </Link>
       </nav>
 
-      {/* Centered content */}
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '64px 24px',
-          minHeight: 'calc(100vh - 56px)',
-        }}
-      >
-        {/* Heading above the Clerk component */}
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-          <h1
-            style={{
-              fontFamily: "'Instrument Serif', Georgia, serif",
-              fontWeight: 400,
-              fontSize: '2rem',
-              color: '#111010',
-              margin: '0 0 8px 0',
-            }}
-          >
-            Welcome back
-          </h1>
-          <p
-            style={{
-              fontWeight: 300,
-              fontSize: '0.88rem',
-              color: '#888580',
-              margin: 0,
-            }}
-          >
-            Sign in to view your scan reports
-          </p>
-        </div>
-
-        {/* Clerk SignIn component */}
-        <div
-          style={{
-            width: '100%',
-            maxWidth: '400px',
-          }}
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 'calc(100vh - 56px)', padding: '64px 24px' }}>
+        <motion.div
+          initial={{ opacity: 0, y: 14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: EASE }}
+          style={{ width: '100%', maxWidth: '400px' }}
         >
-          <SignIn
-            appearance={{
-              variables: {
-                colorBackground: '#ffffff',
-                colorText: '#111010',
-                colorTextSecondary: '#444240',
-                colorInputBackground: '#ffffff',
-                colorInputText: '#111010',
-                colorPrimary: '#111010',
-                borderRadius: '0px',
-                fontFamily: "'DM Sans', sans-serif",
-                fontWeight: { normal: 300, medium: 400, bold: 400 },
-              },
-              elements: {
-                card: {
-                  boxShadow: 'none',
-                  border: '1px solid #e2deda',
-                  borderRadius: '0',
-                  backgroundColor: '#ffffff',
-                },
-                headerTitle: {
-                  display: 'none',
-                },
-                headerSubtitle: {
-                  display: 'none',
-                },
-                socialButtonsBlockButton: {
-                  border: '1px solid #e2deda',
-                  borderRadius: '0',
-                  backgroundColor: '#ffffff',
-                  color: '#111010',
-                  fontWeight: 400,
-                },
-                formButtonPrimary: {
-                  backgroundColor: '#111010',
-                  borderRadius: '0',
-                  fontWeight: 400,
-                  fontSize: '0.9rem',
-                },
-                formFieldInput: {
-                  border: '1px solid #e2deda',
-                  borderRadius: '0',
-                  fontSize: '0.9rem',
-                },
-                footerActionLink: {
-                  color: '#111010',
-                  fontWeight: 400,
-                },
-                dividerLine: {
-                  backgroundColor: '#e2deda',
-                },
-              },
-            }}
-          />
-        </div>
+          <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+            <h1 style={{ fontFamily: 'var(--serif)', fontWeight: 400, fontSize: '2rem', color: 'var(--ink)', margin: '0 0 8px 0' }}>
+              Welcome back
+            </h1>
+            <p style={{ fontWeight: 300, fontSize: '0.88rem', color: 'var(--ink3)', margin: 0 }}>
+              Sign in to view your scan reports
+            </p>
+          </div>
+
+          <form onSubmit={handleSubmit} style={{ border: '1px solid var(--border)', background: '#fff', padding: '32px' }}>
+            <label style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
+              <span style={{ fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ink4)' }}>
+                Email
+              </span>
+              <input
+                type="email"
+                required
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                style={inputStyle}
+                onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--ink)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(17,16,16,0.06)' }}
+                onBlur={(e) => { e.currentTarget.style.borderColor = '#e2deda'; e.currentTarget.style.boxShadow = 'none' }}
+              />
+            </label>
+
+            <label style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
+              <span style={{ fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ink4)' }}>
+                Password
+              </span>
+              <input
+                type="password"
+                required
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                style={inputStyle}
+                onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--ink)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(17,16,16,0.06)' }}
+                onBlur={(e) => { e.currentTarget.style.borderColor = '#e2deda'; e.currentTarget.style.boxShadow = 'none' }}
+              />
+            </label>
+
+            {error && (
+              <p style={{ fontSize: '0.82rem', color: 'var(--red)', marginBottom: '16px', lineHeight: 1.5 }}>
+                {error}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={loading}
+              style={{ width: '100%', padding: '13px', background: loading ? '#444240' : 'var(--ink)', color: '#fff', border: 'none', fontFamily: 'var(--sans)', fontSize: '0.9rem', fontWeight: 400, cursor: loading ? 'wait' : 'pointer', transition: 'background 0.15s' }}
+            >
+              {loading ? 'Signing in…' : 'Sign in'}
+            </button>
+
+            <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '0.82rem', color: 'var(--ink3)', fontWeight: 300 }}>
+              No account?{' '}
+              <Link href="/sign-up" style={{ color: 'var(--ink)', fontWeight: 400, textDecoration: 'none' }}>
+                Create one →
+              </Link>
+            </p>
+          </form>
+        </motion.div>
       </div>
     </div>
+  )
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={<div style={{ minHeight: '100vh', background: 'var(--bg)' }} />}>
+      <SignInForm />
+    </Suspense>
   )
 }

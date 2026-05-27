@@ -1,17 +1,18 @@
-import { auth } from '@clerk/nextjs/server'
 import { NextRequest, NextResponse } from 'next/server'
+import { requireAuth } from '@/lib/auth'
 import { createServiceClient } from '@/lib/supabase'
+import type { Finding } from '@/types'
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { scanId: string } }
+  { params }: { params: { scanId: string } },
 ) {
-  const { userId } = auth()
-  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  const auth = await requireAuth()
+  if (auth instanceof NextResponse) return auth
+  const { userId } = auth
 
   const supabase = createServiceClient()
 
-  // Verify ownership
   const { data: job } = await supabase
     .from('scan_jobs')
     .select('id, status, repo_name, site_url, created_at, completed_at, user_id')
@@ -21,16 +22,13 @@ export async function GET(
   if (!job) return NextResponse.json({ error: 'Not found' }, { status: 404 })
   if (job.user_id !== userId) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-  // Get counts (always safe to return)
   const { data: findingsRow } = await supabase
     .from('scan_findings')
     .select('total_count, critical_count, high_count, medium_count, low_count, findings')
     .eq('scan_job_id', params.scanId)
     .single()
 
-  // CRITICAL: Check unlock status BEFORE returning any finding details.
-  // If no row exists in scan_unlocks for this (scan_job_id, user_id), finding
-  // details are NEVER returned — only counts and locked stubs.
+  // CRITICAL: check unlock before returning any finding details
   const { data: unlock } = await supabase
     .from('scan_unlocks')
     .select('id, unlock_type')
@@ -38,7 +36,7 @@ export async function GET(
     .eq('user_id', userId)
     .single()
 
-  const baseResponse = {
+  const base = {
     scanId: params.scanId,
     status: job.status,
     repoName: job.repo_name,
@@ -54,24 +52,15 @@ export async function GET(
     unlockType: unlock?.unlock_type ?? null,
   }
 
-  // Only attach full findings if a confirmed unlock row exists
   if (unlock && findingsRow?.findings) {
-    return NextResponse.json({
-      ...baseResponse,
-      findings: findingsRow.findings,
-    })
+    return NextResponse.json({ ...base, findings: findingsRow.findings })
   }
 
-  // Return preview: first finding only (teaser), rest as locked stubs
-  const findings = findingsRow?.findings as any[] | null
-  const preview = findings ? [findings[0]].filter(Boolean) : []
-  const lockedStubs = findings
-    ? findings.slice(1).map((f: any) => ({ severity: f.severity, file: f.file, id: f.id }))
+  const allFindings = findingsRow?.findings as Finding[] | null
+  const preview = allFindings ? [allFindings[0]].filter(Boolean) : []
+  const lockedStubs = allFindings
+    ? allFindings.slice(1).map((f) => ({ severity: f.severity, file: f.file, id: f.id }))
     : []
 
-  return NextResponse.json({
-    ...baseResponse,
-    findings: preview,
-    lockedStubs,
-  })
+  return NextResponse.json({ ...base, findings: preview, lockedStubs })
 }

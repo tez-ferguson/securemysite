@@ -3,8 +3,9 @@
 import { Suspense, useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { SignInButton, UserButton, useUser } from '@clerk/nextjs'
 import { motion, AnimatePresence } from 'framer-motion'
+import { createBrowserClient } from '@/lib/supabase.client'
+import type { User } from '@supabase/supabase-js'
 import GitHubModal from '@/components/GitHubModal'
 import ScanProgress from '@/components/ScanProgress'
 import { CountUp } from '@/components/motion/CountUp'
@@ -48,7 +49,16 @@ const PAGE_CSS = `
 function HomeInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { isSignedIn } = useUser()
+  const [user, setUser] = useState<User | null>(null)
+
+  useEffect(() => {
+    const supabase = createBrowserClient()
+    supabase.auth.getUser().then(({ data }) => setUser(data.user))
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, session) => {
+      setUser(session?.user ?? null)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
 
   const [uiState, setUiState] = useState<UIState>('default')
   const [siteUrl, setSiteUrl] = useState('')
@@ -82,7 +92,7 @@ function HomeInner() {
     const normalized = normalizeSiteUrl(siteUrl)
     try { sessionStorage.setItem('vibesec_pending_site', normalized) } catch { /* ignore */ }
 
-    if (!isSignedIn) {
+    if (!user) {
       router.push('/sign-in?redirect_url=' + encodeURIComponent('/'))
       return
     }
@@ -125,12 +135,12 @@ function HomeInner() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
             <Link href="/pricing" className="vs-nav-link vs-nav-link-item">Pricing</Link>
             <Link href="/demo" className="vs-nav-link vs-nav-link-item">Demo</Link>
-            {isSignedIn ? (
-              <UserButton afterSignOutUrl="/" />
+            {user ? (
+              <Link href="/dashboard" style={{ fontSize: '0.8rem', color: 'var(--ink3)', textDecoration: 'none', letterSpacing: '0.01em', transition: 'color 0.15s' }}>
+                Dashboard
+              </Link>
             ) : (
-              <SignInButton mode="modal">
-                <button className="vs-nav-cta">Sign in</button>
-              </SignInButton>
+              <Link href="/sign-in" className="vs-nav-cta">Sign in</Link>
             )}
           </div>
         </motion.nav>

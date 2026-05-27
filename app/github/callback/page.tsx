@@ -2,9 +2,9 @@
 
 import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useUser } from '@clerk/nextjs'
 import Link from 'next/link'
 import { normalizeSiteUrl } from '@/lib/url'
+import { createBrowserClient } from '@/lib/supabase.client'
 
 function decodeState(b64: string): { siteUrl?: string } {
   try {
@@ -17,7 +17,6 @@ function decodeState(b64: string): { siteUrl?: string } {
 function CallbackInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { isSignedIn, isLoaded } = useUser()
 
   const installationId = searchParams.get('installation_id')
   const stateParam = searchParams.get('state')
@@ -36,39 +35,39 @@ function CallbackInner() {
   }, [stateParam])
 
   useEffect(() => {
-    if (!isLoaded) return
-    if (!isSignedIn) {
-      const here = typeof window !== 'undefined' ? window.location.href : '/github/callback'
-      router.push(`/sign-in?redirect_url=${encodeURIComponent(here)}`)
-      return
-    }
     if (!installationId) {
       setError('Missing installation from GitHub. Try connecting again from the home page.')
       setLoading(false)
       return
     }
 
+    // Verify session first
+    const supabase = createBrowserClient()
     let cancelled = false
-    ;(async () => {
-      try {
-        const res = await fetch(`/api/github/installations/${installationId}/repos`)
-        const data = await res.json()
-        if (!res.ok) throw new Error(data.error || 'Could not list repositories')
-        if (cancelled) return
-        const list = data.repos as { fullName: string; cloneUrl: string }[]
-        setRepos(list)
-        if (list.length === 1) setSelected(list[0].cloneUrl)
-      } catch (e: unknown) {
-        if (!cancelled) setError(e instanceof Error ? e.message : 'Something went wrong')
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    })()
 
-    return () => {
-      cancelled = true
-    }
-  }, [isLoaded, isSignedIn, installationId, router])
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) {
+        router.push(`/sign-in?redirect_url=${encodeURIComponent(window.location.href)}`)
+        return
+      }
+
+      fetch(`/api/github/installations/${installationId}/repos`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (cancelled) return
+          if (data.error) throw new Error(data.error)
+          const list = data.repos as { fullName: string; cloneUrl: string }[]
+          setRepos(list)
+          if (list.length === 1) setSelected(list[0].cloneUrl)
+        })
+        .catch((e: unknown) => {
+          if (!cancelled) setError(e instanceof Error ? e.message : 'Something went wrong')
+        })
+        .finally(() => { if (!cancelled) setLoading(false) })
+    })
+
+    return () => { cancelled = true }
+  }, [installationId, router])
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()

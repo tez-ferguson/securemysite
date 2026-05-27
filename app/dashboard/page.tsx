@@ -1,7 +1,6 @@
-import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@supabase/supabase-js'
+import { createServerSupabaseClient, createServiceClient } from '@/lib/supabase'
 import type { ScanJob, SeverityLevel } from '../../types'
 import DashboardRows from '../../components/DashboardRows'
 
@@ -99,13 +98,12 @@ function StatusLabel({ status }: { status: ScanStatus }) {
 }
 
 export default async function DashboardPage() {
-  const { userId } = await auth()
+  const supabaseAuth = createServerSupabaseClient()
+  const { data: { user } } = await supabaseAuth.auth.getUser()
+  const userId = user?.id
   if (!userId) redirect('/sign-in')
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
+  const supabase = createServiceClient()
 
   const { data: scans } = await supabase
     .from('scan_jobs')

@@ -2,7 +2,10 @@
 
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { useUser, SignInButton, UserButton } from '@clerk/nextjs'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { createBrowserClient } from '@/lib/supabase.client'
+import type { User } from '@supabase/supabase-js'
 
 interface NavProps {
   backHref?: string
@@ -12,7 +15,24 @@ interface NavProps {
 const EASE = [0.16, 1, 0.3, 1] as const
 
 export default function Nav({ backHref, backLabel }: NavProps) {
-  const { isSignedIn } = useUser()
+  const router = useRouter()
+  const [user, setUser] = useState<User | null>(null)
+
+  useEffect(() => {
+    const supabase = createBrowserClient()
+    supabase.auth.getUser().then(({ data }) => setUser(data.user))
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+    })
+    return () => subscription.unsubscribe()
+  }, [])
+
+  async function handleSignOut() {
+    const supabase = createBrowserClient()
+    await supabase.auth.signOut()
+    router.push('/')
+    router.refresh()
+  }
 
   return (
     <motion.nav
@@ -50,17 +70,32 @@ export default function Nav({ backHref, backLabel }: NavProps) {
           </>
         )}
 
-        {isSignedIn ? (
-          <UserButton afterSignOutUrl="/" />
-        ) : (
-          <SignInButton mode="modal">
-            <button style={{ fontSize: '0.8rem', color: 'var(--ink)', background: 'none', border: '1px solid var(--ink)', padding: '8px 18px', cursor: 'pointer', fontFamily: 'var(--sans)', fontWeight: 400, letterSpacing: '0.01em', transition: 'background 0.15s, color 0.15s' }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'var(--ink)'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--bg)' }}
-              onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'none'; (e.currentTarget as HTMLButtonElement).style.color = 'var(--ink)' }}
+        {user ? (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <Link href="/dashboard" style={{ fontSize: '0.8rem', color: 'var(--ink3)', textDecoration: 'none', transition: 'color 0.15s' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--ink)')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--ink3)')}
             >
-              Sign in
+              Dashboard
+            </Link>
+            <button
+              onClick={handleSignOut}
+              style={{ fontSize: '0.8rem', color: 'var(--ink3)', background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'var(--sans)', transition: 'color 0.15s', padding: 0 }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--ink)')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = 'var(--ink3)')}
+            >
+              Sign out
             </button>
-          </SignInButton>
+          </div>
+        ) : (
+          <Link
+            href="/sign-in"
+            style={{ fontSize: '0.8rem', color: 'var(--ink)', background: 'none', border: '1px solid var(--ink)', padding: '8px 18px', fontFamily: 'var(--sans)', fontWeight: 400, letterSpacing: '0.01em', textDecoration: 'none', transition: 'background 0.15s, color 0.15s', display: 'inline-block' }}
+            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'var(--ink)'; (e.currentTarget as HTMLElement).style.color = 'var(--bg)' }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'none'; (e.currentTarget as HTMLElement).style.color = 'var(--ink)' }}
+          >
+            Sign in
+          </Link>
         )}
       </div>
     </motion.nav>

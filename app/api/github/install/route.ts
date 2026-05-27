@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@clerk/nextjs/server'
+import { requireAuth } from '@/lib/auth'
 import { z } from 'zod'
 import { createServiceClient } from '@/lib/supabase'
 
@@ -11,26 +11,20 @@ const schema = z.object({
 })
 
 export async function POST(req: NextRequest) {
-  const { userId } = auth()
-
-  if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const auth = await requireAuth()
+  if (auth instanceof NextResponse) return auth
+  const { userId } = auth
 
   const body = await req.json()
   const parsed = schema.safeParse(body)
-
   if (!parsed.success) {
     return NextResponse.json({ error: 'Invalid input', details: parsed.error.flatten() }, { status: 400 })
   }
 
   const { scanId, installationId, repoUrl, repoName } = parsed.data
-
   const supabase = createServiceClient()
 
-  const update: Record<string, string> = {
-    github_installation_id: installationId,
-  }
+  const update: Record<string, string> = { github_installation_id: installationId }
   if (repoUrl) update.repo_url = repoUrl
   if (repoName) update.repo_name = repoName
 
@@ -47,9 +41,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to update scan job' }, { status: 500 })
   }
 
-  if (!data) {
-    return NextResponse.json({ error: 'Scan not found or access denied' }, { status: 404 })
-  }
+  if (!data) return NextResponse.json({ error: 'Scan not found or access denied' }, { status: 404 })
 
   return NextResponse.json({ ok: true })
 }

@@ -1,6 +1,5 @@
 import type { Metadata } from 'next'
 import { Instrument_Serif, DM_Sans } from 'next/font/google'
-import { ClerkProvider } from '@clerk/nextjs'
 import './globals.css'
 
 const instrumentSerif = Instrument_Serif({
@@ -30,12 +29,10 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <ClerkProvider>
-      <html lang="en" className={`${instrumentSerif.variable} ${dmSans.variable}`}>
-        <body className="font-sans font-light bg-[#f7f5f2] antialiased">
-          {children}
-        </body>
-      </html>
-    </ClerkProvider>
+    <html lang="en" className={`${instrumentSerif.variable} ${dmSans.variable}`}>
+      <body className="font-sans font-light bg-[#f7f5f2] antialiased">
+        {children}
+      </body>
+    </html>
   )
 }

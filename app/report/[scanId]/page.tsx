@@ -1,7 +1,6 @@
-import { auth } from '@clerk/nextjs/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { createServiceClient } from '@/lib/supabase'
+import { createServerSupabaseClient, createServiceClient } from '@/lib/supabase'
 import FindingCard from '../../../components/FindingCard'
 import LockedFinding from '../../../components/LockedFinding'
 import PaywallPanel from '../../../components/PaywallPanel'
@@ -55,7 +54,9 @@ function RiskBadge({ severity }: { severity: SeverityLevel }) {
 }
 
 export default async function ReportPage({ params }: ReportPageProps) {
-  const { userId } = await auth()
+  const supabaseAuth = createServerSupabaseClient()
+  const { data: { user } } = await supabaseAuth.auth.getUser()
+  const userId = user?.id
   if (!userId) redirect('/sign-in')
 
   const supabase = createServiceClient()

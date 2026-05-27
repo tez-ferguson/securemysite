@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { clerkClient } from '@clerk/nextjs/server'
+import { getUserEmail } from '@/lib/auth'
 import { Resend } from 'resend'
 import { createServiceClient } from '@/lib/supabase'
 
@@ -54,9 +54,7 @@ export async function POST(
 
   try {
     if (job?.user_id && process.env.RESEND_API_KEY && process.env.NEXT_PUBLIC_APP_URL) {
-      const user = await clerkClient.users.getUser(job.user_id)
-      const addr =
-        user.primaryEmailAddress?.emailAddress ?? user.emailAddresses[0]?.emailAddress
+      const addr = await getUserEmail(job.user_id)
       if (addr) {
         const subject = `Your VibeSec scan finished — ${counts.total} vulnerabilities found`
         const label = job.repo_name ?? job.site_url ?? 'your project'
