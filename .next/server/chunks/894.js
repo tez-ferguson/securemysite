@@ -1,1 +1,0 @@
-"use strict";exports.id=894,exports.ids=[894],exports.modules={4894:(e,s,r)=>{r.d(s,{fU:()=>t.fU,createServiceClient:()=>t.mq});var t=r(5717);process.env.NEXT_PUBLIC_SUPABASE_URL,process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}};
