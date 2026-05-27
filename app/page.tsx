@@ -9,7 +9,8 @@ import type { User } from '@supabase/supabase-js'
 import GitHubModal from '@/components/GitHubModal'
 import ScanProgress from '@/components/ScanProgress'
 import { CountUp } from '@/components/motion/CountUp'
-import { BackgroundPathsHero, HeroAnimatedTitle } from '@/components/ui/background-paths'
+import { HeroAnimatedTitle } from '@/components/ui/background-paths'
+import { GLSLHills } from '@/components/ui/glsl-hills'
 import { encodeGithubInstallState, normalizeSiteUrl } from '@/lib/url'
 
 type UIState = 'default' | 'modal' | 'scanning'
@@ -229,9 +230,21 @@ function HomeInner() {
         </div>
       </motion.nav>
 
-      {/* ── DARK HERO with animated paths ── */}
-      <div ref={heroRef}>
-        <BackgroundPathsHero>
+      {/* ── DARK HERO with GLSL hills ── */}
+      <div ref={heroRef} style={{ position: 'relative', background: DARK, overflow: 'hidden' }}>
+        {/* Three.js GLSL terrain — absolute behind everything */}
+        <GLSLHills speed={0.5} cameraZ={125} planeSize={256} />
+
+        {/* Radial vignette: softens the mesh edges so text is legible */}
+        <div
+          aria-hidden
+          style={{
+            position: 'absolute', inset: 0, zIndex: 2, pointerEvents: 'none',
+            background: 'radial-gradient(ellipse 85% 70% at 50% 50%, transparent 30%, rgba(14,12,11,0.78) 100%)',
+          }}
+        />
+
+        <div style={{ position: 'relative', zIndex: 10 }}>
           <div
             className="vs-hero-inner"
             style={{
@@ -360,7 +373,7 @@ function HomeInner() {
               />
             </motion.div>
           </div>
-        </BackgroundPathsHero>
+        </div>
       </div>
 
       {/* ── Light editorial sections below ── */}
