@@ -60,8 +60,8 @@ const PAGE_CSS = `
     .vs-stats { flex-direction: column !important; }
     .vs-stat-cell { border-right: none !important; border-bottom: 1px solid var(--border) !important; }
     .vs-stat-cell:last-child { border-bottom: none !important; }
-    .vs-hero-title { font-size: clamp(2.8rem, 10vw, 5rem) !important; }
-    .vs-hero-inner { padding: 64px 24px 80px !important; }
+    .vs-hero-title { font-size: clamp(2rem, 8vw, 3.2rem) !important; }
+    .vs-hero-inner { padding: 72px 24px 56px !important; }
     .vs-section-inner { padding-left: 24px !important; padding-right: 24px !important; }
     .vs-steps-grid { grid-template-columns: 1fr !important; }
     .vs-split-grid { grid-template-columns: 1fr !important; }
@@ -253,7 +253,7 @@ function HomeInner() {
               flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: '120px 24px 100px',
+              padding: '96px 24px 64px',
               textAlign: 'center',
             }}
           >
@@ -262,7 +262,7 @@ function HomeInner() {
               initial={{ opacity: 0, letterSpacing: '0.04em' }}
               animate={{ opacity: 1, letterSpacing: '0.14em' }}
               transition={{ duration: 0.8, delay: 0.3, ease: EASE }}
-              style={{ fontSize: '0.68rem', textTransform: 'uppercase', color: 'rgba(247,245,242,0.45)', marginBottom: '36px', letterSpacing: '0.14em' }}
+              style={{ fontSize: '0.68rem', textTransform: 'uppercase', color: 'rgba(247,245,242,0.45)', marginBottom: '24px', letterSpacing: '0.14em' }}
             >
               Security scanning for vibe-coded apps
             </motion.p>
@@ -270,7 +270,7 @@ function HomeInner() {
             {/* Animated title */}
             <div
               className="vs-hero-title"
-              style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(3.2rem, 7vw, 5.8rem)', fontWeight: 400, lineHeight: 1.04, letterSpacing: '-0.025em', marginBottom: '36px' }}
+              style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2.2rem, 4.5vw, 3.8rem)', fontWeight: 400, lineHeight: 1.06, letterSpacing: '-0.025em', marginBottom: '20px' }}
             >
               <HeroAnimatedTitle line1="Your app is live." line2="Is it secure?" line2Accent />
             </div>
@@ -280,7 +280,7 @@ function HomeInner() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 1.1, ease: EASE }}
-              style={{ fontSize: '0.95rem', color: 'rgba(247,245,242,0.5)', lineHeight: 1.75, maxWidth: '400px', fontWeight: 300, marginBottom: '52px' }}
+              style={{ fontSize: '0.88rem', color: 'rgba(247,245,242,0.5)', lineHeight: 1.7, maxWidth: '400px', fontWeight: 300, marginBottom: '32px' }}
             >
               Lovable, Bolt, Cursor — they build fast. Security doesn&apos;t come included.
               Enter your site and we&apos;ll scan the codebase for what got missed.
@@ -336,7 +336,7 @@ function HomeInner() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 1.45, ease: EASE }}
-              style={{ display: 'flex', marginTop: '72px', border: '1px solid rgba(247,245,242,0.1)', background: 'rgba(247,245,242,0.04)' }}
+              style={{ display: 'flex', marginTop: '44px', border: '1px solid rgba(247,245,242,0.1)', background: 'rgba(247,245,242,0.04)' }}
             >
               {STATS.map((stat, i) => (
                 <div
@@ -364,7 +364,7 @@ function HomeInner() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 2.0, duration: 0.8 }}
-              style={{ marginTop: '56px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+              style={{ marginTop: '36px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
             >
               <motion.div
                 animate={{ y: [0, 8, 0] }}
