@@ -105,7 +105,10 @@ export default function SignUpPage() {
           </div>
 
           <form onSubmit={handleSubmit} style={{ border: '1px solid var(--border)', background: '#fff', padding: '32px' }}>
-            <label style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
+            <motion.label
+              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: 0.15, ease: EASE }}
+              style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '20px' }}>
               <span style={{ fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ink4)' }}>
                 Email
               </span>
@@ -119,9 +122,12 @@ export default function SignUpPage() {
                 onFocus={(e) => { e.currentTarget.style.borderColor = 'var(--ink)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(17,16,16,0.06)' }}
                 onBlur={(e) => { e.currentTarget.style.borderColor = '#e2deda'; e.currentTarget.style.boxShadow = 'none' }}
               />
-            </label>
+            </motion.label>
 
-            <label style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
+            <motion.label
+              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: 0.22, ease: EASE }}
+              style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '24px' }}>
               <span style={{ fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--ink4)' }}>
                 Password
               </span>
@@ -137,28 +143,45 @@ export default function SignUpPage() {
                 onBlur={(e) => { e.currentTarget.style.borderColor = '#e2deda'; e.currentTarget.style.boxShadow = 'none' }}
               />
               <span style={{ fontSize: '0.72rem', color: 'var(--ink4)' }}>Minimum 8 characters</span>
-            </label>
+            </motion.label>
 
             {error && (
-              <p style={{ fontSize: '0.82rem', color: 'var(--red)', marginBottom: '16px', lineHeight: 1.5 }}>
+              <motion.p
+                initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.25 }}
+                style={{ fontSize: '0.82rem', color: 'var(--red)', marginBottom: '16px', lineHeight: 1.5 }}>
                 {error}
-              </p>
+              </motion.p>
             )}
 
-            <button
-              type="submit"
-              disabled={loading}
-              style={{ width: '100%', padding: '13px', background: loading ? '#444240' : 'var(--ink)', color: '#fff', border: 'none', fontFamily: 'var(--sans)', fontSize: '0.9rem', fontWeight: 400, cursor: loading ? 'wait' : 'pointer', transition: 'background 0.15s' }}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.35, delay: 0.3, ease: EASE }}
+              style={{ position: 'relative', overflow: 'hidden' }}
             >
-              {loading ? 'Creating account…' : 'Create account'}
-            </button>
+              <motion.div
+                initial={{ scaleX: 0 }} whileHover={!loading ? { scaleX: 1 } : {}}
+                transition={{ duration: 0.25, ease: [0.16,1,0.3,1] }}
+                style={{ position: 'absolute', inset: 0, background: '#2a2928', transformOrigin: 'left', zIndex: 0 }}
+              />
+              <button
+                type="submit"
+                disabled={loading}
+                style={{ position: 'relative', zIndex: 1, width: '100%', padding: '13px', background: loading ? '#444240' : 'var(--ink)', color: '#fff', border: 'none', fontFamily: 'var(--sans)', fontSize: '0.9rem', fontWeight: 400, cursor: loading ? 'wait' : 'pointer' }}
+              >
+                {loading ? 'Creating account…' : 'Create account'}
+              </button>
+            </motion.div>
 
-            <p style={{ textAlign: 'center', marginTop: '20px', fontSize: '0.82rem', color: 'var(--ink3)', fontWeight: 300 }}>
+            <motion.p
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              transition={{ duration: 0.4, delay: 0.38 }}
+              style={{ textAlign: 'center', marginTop: '20px', fontSize: '0.82rem', color: 'var(--ink3)', fontWeight: 300 }}>
               Already have an account?{' '}
               <Link href="/sign-in" style={{ color: 'var(--ink)', fontWeight: 400, textDecoration: 'none' }}>
                 Sign in →
               </Link>
-            </p>
+            </motion.p>
           </form>
         </motion.div>
       </div>

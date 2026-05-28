@@ -3,8 +3,11 @@
 import { Suspense, useEffect, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
+import { motion, AnimatePresence } from 'framer-motion'
 import { normalizeSiteUrl } from '@/lib/url'
 import { createBrowserClient } from '@/lib/supabase.client'
+
+const EASE = [0.16, 1, 0.3, 1] as const
 
 function decodeState(b64: string): { siteUrl?: string } {
   try {
@@ -143,37 +146,48 @@ function CallbackInner() {
       </nav>
 
       <div style={{ maxWidth: 520, margin: '0 auto' }}>
-        <h1
-          style={{
-            fontFamily: "'Instrument Serif', Georgia, serif",
-            fontSize: '1.85rem',
-            fontWeight: 400,
-            marginBottom: 12,
-            letterSpacing: '-0.02em',
-          }}
+        <motion.h1
+          initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, ease: EASE }}
+          style={{ fontFamily: "'Instrument Serif', Georgia, serif", fontSize: '1.85rem', fontWeight: 400, marginBottom: 12, letterSpacing: '-0.02em' }}
         >
           Choose a repository
-        </h1>
-        <p style={{ fontSize: '0.88rem', color: '#888580', lineHeight: 1.65, marginBottom: 28 }}>
+        </motion.h1>
+        <motion.p
+          initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1, ease: EASE }}
+          style={{ fontSize: '0.88rem', color: '#888580', lineHeight: 1.65, marginBottom: 28 }}>
           GitHub authorized this installation. Pick the repo that powers your deployed site —
           then we&apos;ll queue the scan.
-        </p>
+        </motion.p>
 
-        {loading && <p style={{ color: '#888580', fontSize: '0.9rem' }}>Loading repositories…</p>}
-
-        {error && (
-          <p style={{ color: '#c0392b', fontSize: '0.88rem', marginBottom: 20 }}>{error}</p>
-        )}
-
-        {!loading && !error && repos.length === 0 && (
-          <p style={{ fontSize: '0.88rem', color: '#888580', marginBottom: 24 }}>
-            No repositories are visible for this installation. Re-install the GitHub App and grant
-            access to at least one repository.
-          </p>
-        )}
+        <AnimatePresence mode="wait">
+          {loading && (
+            <motion.p key="loading" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              style={{ color: '#888580', fontSize: '0.9rem' }}>
+              Loading repositories…
+            </motion.p>
+          )}
+          {error && (
+            <motion.p key="error" initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+              style={{ color: '#c0392b', fontSize: '0.88rem', marginBottom: 20 }}>
+              {error}
+            </motion.p>
+          )}
+          {!loading && !error && repos.length === 0 && (
+            <motion.p key="empty" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              style={{ fontSize: '0.88rem', color: '#888580', marginBottom: 24 }}>
+              No repositories are visible for this installation. Re-install the GitHub App and grant
+              access to at least one repository.
+            </motion.p>
+          )}
+        </AnimatePresence>
 
         {!loading && repos.length > 0 && (
-          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <motion.form
+            initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45, delay: 0.15, ease: EASE }}
+            onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             <label style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <span style={{ fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: '#bbb8b4' }}>
                 Repository
@@ -221,24 +235,21 @@ function CallbackInner() {
               />
             </label>
 
-            <button
-              type="submit"
-              disabled={submitting || !selected}
-              style={{
-                marginTop: 8,
-                padding: '14px 22px',
-                background: submitting ? '#444240' : '#111010',
-                color: '#ffffff',
-                border: '1px solid #111010',
-                fontFamily: "'DM Sans', sans-serif",
-                fontSize: '0.88rem',
-                fontWeight: 400,
-                cursor: submitting ? 'wait' : 'pointer',
-              }}
-            >
-              {submitting ? 'Starting scan…' : 'Start security scan'}
-            </button>
-          </form>
+            <div style={{ position: 'relative', overflow: 'hidden', marginTop: 8 }}>
+              <motion.div
+                initial={{ scaleX: 0 }} whileHover={!submitting && !!selected ? { scaleX: 1 } : {}}
+                transition={{ duration: 0.25, ease: [0.16,1,0.3,1] }}
+                style={{ position: 'absolute', inset: 0, background: '#2a2928', transformOrigin: 'left', zIndex: 0 }}
+              />
+              <button
+                type="submit"
+                disabled={submitting || !selected}
+                style={{ position: 'relative', zIndex: 1, padding: '14px 22px', background: submitting ? '#444240' : '#111010', color: '#ffffff', border: 'none', fontFamily: "'DM Sans', sans-serif", fontSize: '0.88rem', fontWeight: 400, cursor: submitting ? 'wait' : 'pointer', width: '100%' }}
+              >
+                {submitting ? 'Starting scan…' : 'Start security scan'}
+              </button>
+            </div>
+          </motion.form>
         )}
       </div>
     </div>
