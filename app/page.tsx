@@ -3,7 +3,8 @@
 import { Suspense, useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Key, ShieldAlert, Code2, Package, Database, Globe } from 'lucide-react'
 import { createBrowserClient } from '@/lib/supabase.client'
 import type { User } from '@supabase/supabase-js'
 import GitHubModal from '@/components/GitHubModal'
@@ -11,6 +12,7 @@ import ScanProgress from '@/components/ScanProgress'
 import { CountUp } from '@/components/motion/CountUp'
 import { HeroAnimatedTitle } from '@/components/ui/background-paths'
 import { GLSLHills } from '@/components/ui/glsl-hills'
+import RadialOrbitalTimeline from '@/components/ui/radial-orbital-timeline'
 import { encodeGithubInstallState, normalizeSiteUrl } from '@/lib/url'
 
 type UIState = 'default' | 'modal' | 'scanning'
@@ -31,16 +33,64 @@ const STEPS = [
   { n: '03', title: 'Get your report in minutes', body: 'We run gitleaks, semgrep, trivy, and a suite of custom checks tailored for AI-built apps. Free scan shows totals. Unlock for full details and AI-written fix prompts.' },
 ]
 
-const FINDINGS = [
-  { icon: '🔑', title: 'Exposed secrets', body: 'API keys, tokens, and credentials committed to source or bundled into the client.' },
-  { icon: '⚠️', title: 'Auth vulnerabilities', body: 'Unprotected API routes, missing session checks, overpermissioned role logic.' },
-  { icon: '💉', title: 'Injection risks', body: 'SQL injection, XSS entry points, and unsafe eval() patterns in generated code.' },
-  { icon: '📦', title: 'Vulnerable dependencies', body: 'Known CVEs in your npm or pip packages surfaced with severity and fix version.' },
-  { icon: '🔓', title: 'RLS misconfigurations', body: 'Supabase Row Level Security disabled in migrations or service role keys on the client.' },
-  { icon: '🌐', title: 'Open CORS and headers', body: 'Wildcard origins, missing CSP, and other HTTP header misconfigurations.' },
-]
-
 const TOOLS = ['Lovable', 'Bolt', 'Cursor', 'v0', 'Replit', 'ChatGPT', 'Claude', 'Windsurf']
+
+const ORBITAL_NODES = [
+  {
+    id: 1,
+    title: 'Secrets',
+    description: 'Exposed secrets & API keys',
+    detail: 'API keys, tokens, and credentials committed to source or bundled into the client-side JavaScript bundle where any visitor can extract them.',
+    icon: Key,
+    relatedIds: [5, 6],
+    severity: 'critical' as const,
+  },
+  {
+    id: 2,
+    title: 'Auth',
+    description: 'Auth vulnerabilities',
+    detail: 'Unprotected API routes, missing session checks, overpermissioned role logic. Common when Lovable or ChatGPT wires up routes without enforcing auth.',
+    icon: ShieldAlert,
+    relatedIds: [5],
+    severity: 'critical' as const,
+  },
+  {
+    id: 3,
+    title: 'Injection',
+    description: 'Injection & code risks',
+    detail: 'SQL injection, XSS entry points, and unsafe eval() patterns. AI tools often use string interpolation in queries because it\'s the fastest pattern to write.',
+    icon: Code2,
+    relatedIds: [2, 4],
+    severity: 'high' as const,
+  },
+  {
+    id: 4,
+    title: 'Deps',
+    description: 'Vulnerable dependencies',
+    detail: 'Known CVEs in your npm or pip packages. AI scaffolding often pins old versions and no one runs npm audit on a "vibe-coded" project before shipping.',
+    icon: Package,
+    relatedIds: [3],
+    severity: 'high' as const,
+  },
+  {
+    id: 5,
+    title: 'RLS',
+    description: 'RLS misconfigurations',
+    detail: 'Supabase Row Level Security disabled in migrations, or service role keys exposed in client-side components. Gives any user full database access.',
+    icon: Database,
+    relatedIds: [1, 2],
+    severity: 'critical' as const,
+  },
+  {
+    id: 6,
+    title: 'CORS',
+    description: 'Open CORS & headers',
+    detail: 'Wildcard Access-Control-Allow-Origin, missing Content-Security-Policy, and other HTTP header misconfigurations left at default.',
+    icon: Globe,
+    relatedIds: [1],
+    severity: 'medium' as const,
+  },
+]
 
 const PAGE_CSS = `
   .vs-link-dim { font-size: 0.8rem; text-decoration: none; letter-spacing: 0.01em; transition: opacity 0.15s; opacity: 0.65; }
@@ -417,33 +467,28 @@ function HomeInner() {
           </div>
         </section>
 
-        {/* ── WHAT WE SCAN ── */}
-        <section id="what-we-scan" style={{ borderTop: '1px solid var(--border)', background: '#fff' }}>
-          <div className="vs-section-inner vs-section-pad" style={{ maxWidth: '1100px', margin: '0 auto', padding: '96px 48px' }}>
+        {/* ── WHAT WE SCAN — orbital ── */}
+        <section id="what-we-scan" style={{ borderTop: '1px solid rgba(247,245,242,0.08)', background: '#0e0c0b' }}>
+          {/* Text header */}
+          <div className="vs-section-inner" style={{ maxWidth: '1100px', margin: '0 auto', padding: '72px 48px 0' }}>
             <ScrollReveal>
-              <p style={{ fontSize: '0.68rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'var(--ink4)', marginBottom: '16px' }}>What we scan for</p>
-              <h2 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2rem, 4vw, 3.2rem)', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)', lineHeight: 1.1, maxWidth: '560px', marginBottom: '64px' }}>
+              <p style={{ fontSize: '0.68rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(247,245,242,0.35)', marginBottom: '16px' }}>What we scan for</p>
+              <h2 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.8rem, 4vw, 3.2rem)', fontWeight: 400, letterSpacing: '-0.02em', color: '#f7f5f2', lineHeight: 1.1, maxWidth: '560px' }}>
                 Six categories.<br />
-                <em style={{ fontStyle: 'italic', color: 'var(--ink3)' }}>All common in AI-built apps.</em>
+                <em style={{ fontStyle: 'italic', color: 'rgba(192,57,43,0.85)' }}>All common in AI-built apps.</em>
               </h2>
+              <p style={{ marginTop: '16px', fontSize: '0.82rem', color: 'rgba(247,245,242,0.35)', fontWeight: 300, fontFamily: 'var(--sans)' }}>
+                Click any node to explore. Connected nodes highlight related attack vectors.
+              </p>
             </ScrollReveal>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1px', background: 'var(--border)' }}>
-              {FINDINGS.map((f, i) => (
-                <ScrollReveal key={f.title} delay={i * 0.06}>
-                  <div className="vs-finding-card">
-                    <div style={{ fontSize: '1.4rem', marginBottom: '16px', lineHeight: 1 }}>{f.icon}</div>
-                    <h3 style={{ fontFamily: 'var(--serif)', fontWeight: 400, fontSize: '1.1rem', color: 'var(--ink)', marginBottom: '10px', letterSpacing: '-0.01em' }}>{f.title}</h3>
-                    <p style={{ fontSize: '0.85rem', color: 'var(--ink3)', lineHeight: 1.65, fontWeight: 300, margin: 0 }}>{f.body}</p>
-                  </div>
-                </ScrollReveal>
-              ))}
-            </div>
           </div>
+
+          {/* Orbital */}
+          <RadialOrbitalTimeline nodes={ORBITAL_NODES} />
         </section>
 
         {/* ── BUILT FOR VIBE CODERS ── */}
-        <section style={{ borderTop: '1px solid var(--border)' }}>
+        <section style={{ borderTop: '1px solid rgba(247,245,242,0.08)', background: 'var(--bg)' }}>
           <div className="vs-section-inner vs-section-pad" style={{ maxWidth: '1100px', margin: '0 auto', padding: '96px 48px' }}>
             <div className="vs-split-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '64px', alignItems: 'center' }}>
               <ScrollReveal>
