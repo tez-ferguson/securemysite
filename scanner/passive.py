@@ -363,15 +363,6 @@ def check_basic_surface(base_url: str, html: str) -> list[dict]:
     return findings
 
 
-@app.function(
-    image=scan_image,
-    timeout=180,
-    memory=512,
-    secrets=[
-        modal.Secret.from_name("moonshot-key"),
-        modal.Secret.from_name("app-callback-secret"),
-    ],
-)
 def _template_fix(finding: dict) -> str:
     return (
         f"Fix the following security issue at {finding['file']}: "
@@ -401,6 +392,15 @@ def _post_callback(
     ).raise_for_status()
 
 
+@app.function(
+    image=scan_image,
+    timeout=180,
+    memory=512,
+    secrets=[
+        modal.Secret.from_name("moonshot-key"),
+        modal.Secret.from_name("app-callback-secret"),
+    ],
+)
 def run_passive_scan(
     token: str,
     url: str,
@@ -459,7 +459,6 @@ def run_passive_scan(
             finding["id"] = str(uuid.uuid4())
             finding["fix_prompt"] = _template_fix(finding)
 
-        # Kimi for top 3 only — keeps scans fast; rest use templates above
         for finding in deduped[:3]:
             finding["fix_prompt"] = generate_fix_prompt(finding, context="passive")
 
