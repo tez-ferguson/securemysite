@@ -235,7 +235,7 @@ const PAGE_CSS = `
     .vs-steps-grid .vs-step-num-large { display: none !important; }
     .vs-input-dark { flex-wrap: wrap; align-items: stretch; }
     .vs-input-prefix { padding: 0 8px !important; font-size: 0.7rem !important; display: flex !important; }
-    .vs-input-dark input { flex: 1; min-width: 0; padding: 12px 10px !important; font-size: 0.82rem !important; }
+    .vs-input-dark input { flex: 1; min-width: 0; padding: 12px 10px !important; }
     .vs-input-submit-wrap { width: 100%; flex-basis: 100%; }
     .vs-input-submit { width: 100%; min-height: 44px !important; padding: 12px 16px !important; }
     .vs-stats { margin-top: 28px !important; }
