@@ -124,25 +124,44 @@ const PAGE_CSS = `
     display: none;
     align-items: center;
     justify-content: center;
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
     padding: 0;
-    border: 1px solid rgba(247,245,242,0.25);
+    border: 1px solid rgba(247,245,242,0.22);
     background: transparent;
     cursor: pointer;
     flex-shrink: 0;
+    flex-direction: column;
   }
-  .vs-burger-btn span {
+  .vs-burger-icon {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    gap: 5px;
+    width: 20px;
+    height: 16px;
+    pointer-events: none;
+  }
+  .vs-burger-icon span {
     display: block;
-    width: 18px;
-    height: 1px;
+    width: 100%;
+    height: 2px;
     background: currentColor;
-    margin: 4px auto;
-    transition: transform 0.2s ease, opacity 0.2s ease;
+    border-radius: 1px;
+    transition: transform 0.22s ease, opacity 0.18s ease;
+    transform-origin: center;
   }
-  .vs-burger-btn[aria-expanded="true"] span:nth-child(1) { transform: translateY(5px) rotate(45deg); }
-  .vs-burger-btn[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
-  .vs-burger-btn[aria-expanded="true"] span:nth-child(3) { transform: translateY(-5px) rotate(-45deg); }
+  .vs-burger-btn[aria-expanded="true"] .vs-burger-icon span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+  .vs-burger-btn[aria-expanded="true"] .vs-burger-icon span:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0);
+  }
+  .vs-burger-btn[aria-expanded="true"] .vs-burger-icon span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
   .vs-mobile-menu-backdrop {
     position: fixed;
     inset: 0;
@@ -443,11 +462,15 @@ function HomeInner() {
             className="vs-burger-btn"
             aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={mobileMenuOpen}
-            animate={{ color: navDark ? WARM : DARK, borderColor: navDark ? 'rgba(247,245,242,0.25)' : '#111010' }}
+            animate={{ color: navDark ? WARM : DARK, borderColor: navDark ? 'rgba(247,245,242,0.22)' : '#111010' }}
             transition={{ duration: 0.35 }}
             onClick={() => setMobileMenuOpen((o) => !o)}
           >
-            <span /><span /><span />
+            <span className="vs-burger-icon" aria-hidden>
+              <span />
+              <span />
+              <span />
+            </span>
           </motion.button>
         </div>
       </motion.nav>
