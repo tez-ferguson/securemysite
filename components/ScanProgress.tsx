@@ -459,14 +459,15 @@ export default function ScanProgress({ siteUrl, scanId, onComplete, mode = 'code
           >
             <p style={{ fontSize: '0.78rem', color: 'var(--ink3)', marginBottom: '12px', lineHeight: 1.5 }}>
               {waitingOnServer
-                ? 'Checks are done on your site — we’re saving results and writing fix prompts.'
-                : 'Taking longer than usual. You can open your report page while we finish.'}
+                ? 'Checks are done on your site — we’re saving results. Opening your report…'
+                : 'Taking longer than usual. Open your report page — it will update when ready.'}
             </p>
             <button
               type="button"
               onClick={() => {
                 if (!completedRef.current) {
                   completedRef.current = true
+                  setShowContinue(false)
                   onComplete(scanId)
                 }
               }}

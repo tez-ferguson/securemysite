@@ -4,7 +4,7 @@ import { Suspense, useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import ScanProgress from '@/components/ScanProgress'
+import PassiveScanWaiting from '@/components/PassiveScanWaiting'
 import FindingCard from '@/components/FindingCard'
 import LockedFinding from '@/components/LockedFinding'
 import PassivePaywallPanel from '@/components/PassivePaywallPanel'
@@ -162,15 +162,29 @@ function ScanReportInner({ token }: { token: string }) {
 
   if (showScanning || data.status === 'queued' || data.status === 'running') {
     return (
-      <ScanProgress
-        siteUrl={data.url}
-        scanId={token}
-        mode="passive"
-        onComplete={() => {
-          setShowScanning(false)
-          fetchStatus().then((p) => { if (p) setData(p) })
-        }}
-      />
+      <>
+        <nav
+          style={{
+            borderBottom: '1px solid #e2deda',
+            padding: '16px 24px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <Link href="/" style={{ fontFamily: 'var(--serif)', fontSize: '1.2rem', color: 'var(--ink)', textDecoration: 'none' }}>
+            VibeSec
+          </Link>
+        </nav>
+        <PassiveScanWaiting
+          token={token}
+          siteUrl={data.url}
+          onReady={() => {
+            setShowScanning(false)
+            fetchStatus().then((p) => { if (p) setData(p) })
+          }}
+        />
+      </>
     )
   }
 

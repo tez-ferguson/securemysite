@@ -389,6 +389,7 @@ def _post_callback(
         },
         headers={"x-scanner-secret": callback_secret},
         timeout=30,
+        follow_redirects=True,
     ).raise_for_status()
 
 
