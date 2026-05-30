@@ -120,50 +120,83 @@ const PAGE_CSS = `
   .vs-brand-logo { font-size: clamp(0.72rem, 2.8vw, 1.15rem); letter-spacing: -0.02em; white-space: nowrap; }
   .vs-hero-eyebrow { max-width: 100%; padding: 0 8px; }
   .vs-hero-privacy { text-align: center; line-height: 1.45; padding: 0 8px; flex-wrap: wrap; justify-content: center; }
-  .vs-mobile-section-nav {
+  .vs-burger-btn {
     display: none;
-    position: fixed;
-    top: 49px;
-    left: 0;
-    right: 0;
-    z-index: 99;
+    align-items: center;
     justify-content: center;
-    gap: 20px;
-    padding: 10px 16px;
-    border-bottom: 1px solid rgba(247,245,242,0.08);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid rgba(247,245,242,0.25);
+    background: transparent;
+    cursor: pointer;
+    flex-shrink: 0;
   }
-  .vs-mobile-section-nav a {
-    font-size: 0.72rem;
-    color: rgba(247,245,242,0.55);
+  .vs-burger-btn span {
+    display: block;
+    width: 18px;
+    height: 1px;
+    background: currentColor;
+    margin: 4px auto;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+  .vs-burger-btn[aria-expanded="true"] span:nth-child(1) { transform: translateY(5px) rotate(45deg); }
+  .vs-burger-btn[aria-expanded="true"] span:nth-child(2) { opacity: 0; }
+  .vs-burger-btn[aria-expanded="true"] span:nth-child(3) { transform: translateY(-5px) rotate(-45deg); }
+  .vs-mobile-menu-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 110;
+    background: rgba(14,12,11,0.5);
+  }
+  .vs-mobile-menu-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 111;
+    width: min(300px, 88vw);
+    height: 100%;
+    padding: 72px 24px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-left: 1px solid #e2deda;
+    box-shadow: -8px 0 32px rgba(17,16,16,0.12);
+  }
+  .vs-mobile-menu-panel a {
+    display: block;
+    padding: 14px 0;
+    font-size: 0.95rem;
+    color: var(--ink);
     text-decoration: none;
-    letter-spacing: 0.02em;
-    white-space: nowrap;
+    border-bottom: 1px solid #e2deda;
+    font-family: var(--sans);
+    font-weight: 300;
   }
-  .vs-mobile-section-nav a:hover { color: #f7f5f2; }
+  .vs-mobile-menu-panel a:last-of-type { border-bottom: none; }
   @media (max-width: 768px) {
-    .vs-mobile-section-nav { display: flex; }
-    .vs-hero-inner { padding-top: 108px !important; }
+    .vs-burger-btn { display: flex; }
+    .vs-nav-sign-in-desktop { display: none !important; }
     .vs-nav-links-desktop { display: none !important; }
     .vs-nav-root { padding: 12px 16px !important; }
+    .vs-hero-inner { padding-top: 80px !important; }
     .vs-stats {
-      display: grid !important;
-      grid-template-columns: 1fr 1fr;
-      flex-direction: unset !important;
+      display: flex !important;
+      flex-direction: row !important;
       width: 100%;
-      max-width: 520px;
+      max-width: 100%;
     }
     .vs-stat-cell {
-      padding: 14px 16px !important;
+      flex: 1 1 0;
+      min-width: 0;
+      padding: 10px 6px !important;
+      text-align: center;
       border-right: 1px solid rgba(247,245,242,0.1) !important;
-      border-bottom: 1px solid rgba(247,245,242,0.1) !important;
+      border-bottom: none !important;
     }
-    .vs-stat-cell:nth-child(2n) { border-right: none !important; }
-    .vs-stat-cell:nth-child(3),
-    .vs-stat-cell:nth-child(4) { border-bottom: none !important; }
-    .vs-stat-cell .vs-stat-value { font-size: 1.45rem !important; }
-    .vs-stat-cell .vs-stat-label { font-size: 0.65rem !important; }
+    .vs-stat-cell:last-child { border-right: none !important; }
+    .vs-stat-cell .vs-stat-value { font-size: 1.15rem !important; }
+    .vs-stat-cell .vs-stat-label { font-size: 0.52rem !important; line-height: 1.35; letter-spacing: 0; }
     .vs-pricing-grid { grid-template-columns: 1fr !important; }
     .vs-pricing-grid > * { min-width: 0; }
     .vs-split-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
@@ -176,17 +209,19 @@ const PAGE_CSS = `
   }
   @media (max-width: 640px) {
     .vs-hero-title { font-size: clamp(1.85rem, 8vw, 3.2rem) !important; }
-    .vs-hero-inner { padding: 112px 16px 40px !important; }
+    .vs-hero-inner { padding: 80px 16px 40px !important; }
     .vs-hero-sub { max-width: 100% !important; margin-bottom: 24px !important; font-size: 0.85rem !important; padding: 0 4px; }
     .vs-hero-eyebrow { font-size: 0.62rem !important; margin-bottom: 16px !important; }
     .vs-steps-grid { grid-template-columns: 1fr !important; gap: 8px !important; padding: 24px 0 !important; }
     .vs-steps-grid .vs-step-num-large { display: none !important; }
-    .vs-input-dark { flex-direction: column; align-items: stretch; }
-    .vs-input-prefix { display: none !important; }
-    .vs-input-dark input { width: 100%; padding: 14px 16px !important; }
-    .vs-input-submit-wrap { width: 100%; }
-    .vs-input-submit { width: 100%; min-height: 48px !important; padding: 14px 16px !important; }
-    .vs-stats { margin-top: 32px !important; }
+    .vs-input-dark { flex-wrap: wrap; align-items: stretch; }
+    .vs-input-prefix { padding: 0 8px !important; font-size: 0.7rem !important; display: flex !important; }
+    .vs-input-dark input { flex: 1; min-width: 0; padding: 12px 10px !important; font-size: 0.82rem !important; }
+    .vs-input-submit-wrap { width: 100%; flex-basis: 100%; }
+    .vs-input-submit { width: 100%; min-height: 44px !important; padding: 12px 16px !important; }
+    .vs-stats { margin-top: 28px !important; }
+    .vs-stat-cell .vs-stat-value { font-size: 1rem !important; }
+    .vs-stat-cell .vs-stat-label { font-size: 0.48rem !important; }
   }
   @media (max-width: 380px) {
     .vs-hero-title { font-size: 1.75rem !important; }
@@ -235,7 +270,9 @@ function HomeInner() {
   const searchParams = useSearchParams()
   const [user, setUser] = useState<User | null>(null)
   const heroRef = useRef<HTMLDivElement>(null)
+  const heroInputRef = useRef<HTMLInputElement>(null)
   const [pastHero, setPastHero] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   useEffect(() => {
     const supabase = createBrowserClient()
@@ -252,6 +289,18 @@ function HomeInner() {
     obs.observe(hero)
     return () => obs.disconnect()
   }, [])
+
+  useEffect(() => {
+    document.body.style.overflow = mobileMenuOpen ? 'hidden' : ''
+    return () => { document.body.style.overflow = '' }
+  }, [mobileMenuOpen])
+
+  useEffect(() => {
+    if (!mobileMenuOpen) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setMobileMenuOpen(false) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [mobileMenuOpen])
 
   const [uiState, setUiState] = useState<UIState>('default')
   const [siteUrl, setSiteUrl] = useState('')
@@ -271,11 +320,29 @@ function HomeInner() {
     router.replace('/', { scroll: false })
   }, [searchParams, router])
 
+  function scrollToHeroInput() {
+    heroRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    window.setTimeout(() => heroInputRef.current?.focus({ preventScroll: true }), 450)
+  }
+
   function handleScan() {
     const trimmed = siteUrl.trim()
-    if (!trimmed) { setInputError(true); return }
+    if (!trimmed) {
+      setInputError(true)
+      scrollToHeroInput()
+      return
+    }
     setInputError(false)
     setUiState('email')
+  }
+
+  function handleScanCta() {
+    setMobileMenuOpen(false)
+    handleScan()
+  }
+
+  function closeMobileMenu() {
+    setMobileMenuOpen(false)
   }
 
   async function handleEmailSubmit(email: string) {
@@ -353,13 +420,13 @@ function HomeInner() {
             })}
           </div>
           {user ? (
-            <motion.div animate={{ color: navDark ? WARM : DARK }} transition={{ duration: 0.35 }}>
+            <motion.div className="vs-nav-sign-in-desktop" animate={{ color: navDark ? WARM : DARK }} transition={{ duration: 0.35 }}>
               <Link href="/dashboard" className="vs-link-dim vs-nav-sign-in" style={{ color: 'inherit', opacity: 0.75, border: 'none', padding: 0 }}>Dashboard</Link>
             </motion.div>
           ) : (
             <motion.a
               href="/sign-in"
-              className="vs-nav-sign-in"
+              className="vs-nav-sign-in vs-nav-sign-in-desktop"
               animate={{
                 color: navDark ? WARM : DARK,
                 borderColor: navDark ? 'rgba(247,245,242,0.3)' : '#111010',
@@ -371,17 +438,75 @@ function HomeInner() {
               Sign in
             </motion.a>
           )}
+          <motion.button
+            type="button"
+            className="vs-burger-btn"
+            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+            aria-expanded={mobileMenuOpen}
+            animate={{ color: navDark ? WARM : DARK, borderColor: navDark ? 'rgba(247,245,242,0.25)' : '#111010' }}
+            transition={{ duration: 0.35 }}
+            onClick={() => setMobileMenuOpen((o) => !o)}
+          >
+            <span /><span /><span />
+          </motion.button>
         </div>
       </motion.nav>
 
-      <div
-        className="vs-mobile-section-nav"
-        style={{ background: navDark ? 'rgba(14,12,11,0.88)' : 'rgba(247,245,242,0.97)' }}
-      >
-        <a href="#how-it-works" style={{ color: navDark ? 'rgba(247,245,242,0.55)' : '#888580' }}>How it works</a>
-        <a href="#what-we-scan" style={{ color: navDark ? 'rgba(247,245,242,0.55)' : '#888580' }}>What we scan</a>
-        <Link href="/pricing" style={{ color: navDark ? 'rgba(247,245,242,0.55)' : '#888580', fontSize: '0.72rem', textDecoration: 'none' }}>Pricing</Link>
-      </div>
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <>
+            <motion.div
+              key="menu-backdrop"
+              className="vs-mobile-menu-backdrop"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              onClick={closeMobileMenu}
+              aria-hidden
+            />
+            <motion.div
+              key="menu-panel"
+              className="vs-mobile-menu-panel"
+              style={{ background: '#f7f5f2' }}
+              initial={{ x: '100%' }}
+              animate={{ x: 0 }}
+              exit={{ x: '100%' }}
+              transition={{ duration: 0.32, ease: EASE }}
+              role="dialog"
+              aria-modal="true"
+              aria-label="Menu"
+            >
+              <a href="#how-it-works" onClick={closeMobileMenu}>How it works</a>
+              <a href="#what-we-scan" onClick={closeMobileMenu}>What we scan</a>
+              <Link href="/pricing" onClick={closeMobileMenu}>Pricing</Link>
+              {user ? (
+                <Link href="/dashboard" onClick={closeMobileMenu}>Dashboard</Link>
+              ) : (
+                <Link href="/sign-in" onClick={closeMobileMenu}>Sign in</Link>
+              )}
+              <button
+                type="button"
+                onClick={handleScanCta}
+                style={{
+                  marginTop: '16px',
+                  padding: '14px 20px',
+                  background: '#111010',
+                  color: '#fff',
+                  border: 'none',
+                  fontFamily: 'var(--sans)',
+                  fontSize: '0.9rem',
+                  cursor: 'pointer',
+                  width: '100%',
+                  textAlign: 'center',
+                }}
+              >
+                Scan your site free
+              </button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* ── DARK HERO with GLSL hills ── */}
       <div ref={heroRef} style={{ position: 'relative', background: DARK, overflow: 'hidden' }}>
@@ -453,6 +578,8 @@ function HomeInner() {
                   https://
                 </span>
                 <input
+                  ref={heroInputRef}
+                  id="hero-site-url"
                   type="text"
                   placeholder="yourapp.vercel.app"
                   spellCheck={false}
@@ -599,7 +726,7 @@ function HomeInner() {
                 <div style={{ position: 'relative', overflow: 'hidden', display: 'inline-block' }}>
                   <motion.div initial={{ scaleX: 0 }} whileHover={{ scaleX: 1 }} transition={{ duration: 0.28, ease: EASE }}
                     style={{ position: 'absolute', inset: 0, background: '#2a2928', transformOrigin: 'left', zIndex: 0 }} />
-                  <button onClick={handleScan} style={{ position: 'relative', zIndex: 1, padding: '13px 28px', background: 'var(--ink)', color: '#fff', border: 'none', fontFamily: 'var(--sans)', fontSize: '0.9rem', fontWeight: 400, cursor: 'pointer', letterSpacing: '0.01em' }}>
+                  <button type="button" onClick={handleScanCta} style={{ position: 'relative', zIndex: 1, padding: '13px 28px', background: 'var(--ink)', color: '#fff', border: 'none', fontFamily: 'var(--sans)', fontSize: '0.9rem', fontWeight: 400, cursor: 'pointer', letterSpacing: '0.01em' }}>
                     Scan your app free →
                   </button>
                 </div>
@@ -675,7 +802,7 @@ function HomeInner() {
                 <div style={{ position: 'relative', overflow: 'hidden' }}>
                   <motion.div initial={{ scaleX: 0 }} whileHover={{ scaleX: 1 }} transition={{ duration: 0.28, ease: EASE }}
                     style={{ position: 'absolute', inset: 0, background: '#2a2928', transformOrigin: 'left', zIndex: 0 }} />
-                  <button onClick={handleScan} style={{ position: 'relative', zIndex: 1, padding: '14px 32px', background: 'var(--ink)', color: '#fff', border: 'none', fontFamily: 'var(--sans)', fontSize: '0.95rem', fontWeight: 400, cursor: 'pointer' }}>
+                  <button type="button" onClick={handleScanCta} style={{ position: 'relative', zIndex: 1, padding: '14px 32px', background: 'var(--ink)', color: '#fff', border: 'none', fontFamily: 'var(--sans)', fontSize: '0.95rem', fontWeight: 400, cursor: 'pointer' }}>
                     Scan your app free
                   </button>
                 </div>
