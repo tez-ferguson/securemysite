@@ -27,6 +27,7 @@ scan_image = (
         "dnspython>=2.6.0",
         "openai>=1.40.0",
     ])
+    .add_local_python_source("llm")
 )
 
 
@@ -385,10 +386,16 @@ def _post_callback(
     counts: dict,
     *,
     failed: bool = False,
+    error_message: str | None = None,
 ) -> None:
     httpx.post(
         callback_url,
-        json={"findings": findings, "counts": counts, "failed": failed},
+        json={
+            "findings": findings,
+            "counts": counts,
+            "failed": failed,
+            "error_message": error_message,
+        },
         headers={"x-scanner-secret": callback_secret},
         timeout=30,
     ).raise_for_status()
@@ -400,7 +407,11 @@ def run_passive_scan(
     callback_url: str,
     callback_secret: str,
 ) -> dict:
-    from llm import generate_fix_prompt
+    try:
+        from llm import generate_fix_prompt
+    except ImportError:
+        def generate_fix_prompt(finding, context="passive"):  # type: ignore
+            return _template_fix(finding)
 
     empty_counts = {"total": 0, "critical": 0, "high": 0, "medium": 0, "low": 0}
 
@@ -463,6 +474,8 @@ def run_passive_scan(
         _post_callback(callback_url, callback_secret, deduped, counts)
         return {"ok": True, "counts": counts, "token": token}
     except Exception as e:
+        err = str(e)[:500]
+        print(f"Passive scan error: {err}")
         try:
             _post_callback(
                 callback_url,
@@ -470,9 +483,10 @@ def run_passive_scan(
                 [],
                 empty_counts,
                 failed=True,
+                error_message=err,
             )
-        except Exception:
-            print(f"Passive scan failed and callback failed: {e}")
+        except Exception as cb_err:
+            print(f"Passive scan failed and callback failed: {cb_err}; scan error: {err}")
         raise
 
 

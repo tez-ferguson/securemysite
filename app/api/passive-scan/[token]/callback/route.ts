@@ -12,7 +12,7 @@ export async function POST(
   }
 
   const body = await req.json()
-  const { findings, counts, failed } = body as {
+  const { findings, counts, failed, error_message: errorMessage } = body as {
     findings: unknown[]
     counts: {
       total: number
@@ -22,6 +22,7 @@ export async function POST(
       low: number
     }
     failed?: boolean
+    error_message?: string
   }
 
   const supabase = createServiceClient()
@@ -45,6 +46,7 @@ export async function POST(
       medium_count: counts.medium,
       low_count: counts.low,
       completed_at: new Date().toISOString(),
+      error_message: failed ? (errorMessage?.slice(0, 500) ?? 'Scan failed on Modal') : null,
     })
     .eq('token', params.token)
 

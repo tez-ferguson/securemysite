@@ -41,9 +41,18 @@ export async function POST(req: NextRequest) {
   }
 
   const token = row.token as string
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '')
   if (!appUrl) {
     return NextResponse.json({ error: 'Server misconfigured' }, { status: 500 })
+  }
+
+  const modalPassiveUrl = process.env.MODAL_PASSIVE_FUNCTION_URL?.trim()
+  if (!modalPassiveUrl) {
+    await supabase
+      .from('passive_scans')
+      .update({ status: 'failed', error_message: 'MODAL_PASSIVE_FUNCTION_URL not set on server' })
+      .eq('token', token)
+    return NextResponse.json({ error: 'Scanner not configured on server' }, { status: 502 })
   }
 
   const callbackUrl = `${appUrl}/api/passive-scan/${token}/callback`
@@ -57,10 +66,19 @@ export async function POST(req: NextRequest) {
     await supabase.from('passive_scans').update({ status: 'running' }).eq('token', token)
   } catch (err) {
     console.error('Passive Modal trigger failed:', err)
-    await supabase.from('passive_scans').update({ status: 'failed' }).eq('token', token)
     const message = err instanceof Error ? err.message : 'Scanner trigger failed'
+    await supabase
+      .from('passive_scans')
+      .update({ status: 'failed', error_message: message.slice(0, 500) })
+      .eq('token', token)
     return NextResponse.json(
-      { error: message.includes('MODAL_PASSIVE') ? 'Scanner not configured on server' : 'Could not start scan' },
+      {
+        error: message.includes('401') || message.includes('Unauthorized')
+          ? 'Scanner secret mismatch — check SCANNER_CALLBACK_SECRET matches Modal APP_CALLBACK_SECRET'
+          : message.includes('MODAL_PASSIVE')
+            ? 'Scanner not configured on server'
+            : 'Could not start scan',
+      },
       { status: 502 },
     )
   }

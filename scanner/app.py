@@ -23,6 +23,7 @@ scan_image = (
     modal.Image.debian_slim()
     .apt_install(["git", "curl", "wget"])
     .pip_install(["semgrep", "openai", "gitpython", "httpx"])
+    .add_local_python_source("llm")
     .run_commands([
         # gitleaks for secrets
         "curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.18.0/gitleaks_8.18.0_linux_x64.tar.gz | tar -xz -C /usr/local/bin",

@@ -31,6 +31,7 @@ export async function GET(
     mediumCount: row.medium_count ?? 0,
     lowCount: row.low_count ?? 0,
     paid,
+    errorMessage: row.error_message ?? null,
   }
 
   if (status === 'complete' || status === 'failed') {

@@ -30,6 +30,7 @@ type StatusPayload = {
   lockedCount?: number
   findings?: Finding[]
   error?: string
+  errorMessage?: string | null
 }
 
 function RiskBadge({ severity }: { severity: SeverityLevel }) {
@@ -174,13 +175,44 @@ function ScanReportInner({ token }: { token: string }) {
   }
 
   if (data.status === 'failed') {
+    const hint = data.errorMessage ?? ''
+    const isConfig =
+      hint.includes('MODAL_PASSIVE') ||
+      hint.includes('Unauthorized') ||
+      hint.includes('401') ||
+      hint.includes('callback') ||
+      hint.includes('secret')
     return (
       <main style={{ maxWidth: '560px', margin: '80px auto', padding: '24px', textAlign: 'center' }}>
         <h1 style={{ fontFamily: 'var(--serif)', fontSize: '1.8rem', marginBottom: '12px' }}>Scan could not finish</h1>
-        <p style={{ color: 'var(--ink3)', lineHeight: 1.55, marginBottom: '24px' }}>
-          The scanner did not return results. This is usually a configuration issue
-          (Modal URL, callback secret, or site URL on the server).
+        <p style={{ color: 'var(--ink3)', lineHeight: 1.55, marginBottom: '16px' }}>
+          {isConfig
+            ? 'Server configuration issue — see checklist below.'
+            : 'The scanner hit an error before results could be saved.'}
         </p>
+        {hint ? (
+          <p
+            style={{
+              fontFamily: 'monospace',
+              fontSize: '0.75rem',
+              color: 'var(--ink4)',
+              background: '#f7f5f2',
+              border: '1px solid #e2deda',
+              padding: '12px',
+              marginBottom: '20px',
+              textAlign: 'left',
+              wordBreak: 'break-word',
+            }}
+          >
+            {hint}
+          </p>
+        ) : null}
+        <ul style={{ textAlign: 'left', color: 'var(--ink3)', fontSize: '0.85rem', lineHeight: 1.6, marginBottom: '24px', paddingLeft: '20px' }}>
+          <li>Vercel: <code>MODAL_PASSIVE_FUNCTION_URL</code> = your Modal deploy URL</li>
+          <li>Vercel: <code>NEXT_PUBLIC_APP_URL</code> = your live site (not localhost)</li>
+          <li>Same secret in Vercel <code>SCANNER_CALLBACK_SECRET</code> and Modal <code>APP_CALLBACK_SECRET</code></li>
+          <li>Redeploy Modal: <code>modal deploy passive.py</code></li>
+        </ul>
         <Link href="/" style={{ color: 'var(--ink)' }}>Try again →</Link>
       </main>
     )
