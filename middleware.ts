@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createMiddlewareClient } from '@/lib/supabase.server'
 
+// Explicitly public (anonymous passive scan flow)
+const PUBLIC_PREFIXES = ['/scan/', '/api/passive-scan/']
+
 const PROTECTED = [
   /^\/dashboard/,
   /^\/report\//,
@@ -20,7 +23,8 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
-  const isProtected = PROTECTED.some((re) => re.test(pathname))
+  const isExplicitlyPublic = PUBLIC_PREFIXES.some((p) => pathname.startsWith(p))
+  const isProtected = !isExplicitlyPublic && PROTECTED.some((re) => re.test(pathname))
 
   if (isProtected && !user) {
     const signInUrl = new URL('/sign-in', request.url)

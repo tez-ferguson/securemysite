@@ -32,3 +32,35 @@ export async function triggerScan(params: {
 
   return res.json() as Promise<{ queued?: boolean }>
 }
+
+export async function triggerPassiveScan(params: {
+  token: string
+  url: string
+  callbackUrl: string
+  callbackSecret: string
+}) {
+  const url = process.env.MODAL_PASSIVE_FUNCTION_URL
+  if (!url) {
+    throw new Error('MODAL_PASSIVE_FUNCTION_URL is not configured')
+  }
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-trigger-secret': process.env.SCANNER_CALLBACK_SECRET!,
+    },
+    body: JSON.stringify({
+      token: params.token,
+      url: params.url,
+      callback_url: params.callbackUrl,
+      callback_secret: params.callbackSecret,
+    }),
+  })
+
+  if (!res.ok) {
+    throw new Error(`Modal passive trigger failed: ${res.status} ${await res.text()}`)
+  }
+
+  return res.json() as Promise<{ queued?: boolean }>
+}

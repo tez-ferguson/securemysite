@@ -159,6 +159,12 @@ body {
   .report-inner { padding: 24px 16px 64px !important; }
 }
 
+/* ─── Passive scan report responsive ─────────────────── */
+@media (max-width: 768px) {
+  .report-summary-grid { grid-template-columns: repeat(2, 1fr) !important; }
+  .passive-report-layout { grid-template-columns: 1fr !important; }
+}
+
 /* ─── Dashboard responsive ──────────────────────────────── */
 @media (max-width: 680px) {
   .dash-nav { padding: 0 16px !important; }

@@ -3,10 +3,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
+export type ScanProgressMode = 'code' | 'passive'
+
 interface ScanProgressProps {
   siteUrl: string
   scanId: string
   onComplete: (scanId: string) => void
+  mode?: ScanProgressMode
 }
 
 type StepState = 'pending' | 'active' | 'done'
@@ -59,23 +62,32 @@ const DEMO_TERMINAL_LINES = [
   '→ Callback OK',
 ]
 
-function makeBaseSteps(): Step[] {
+function makeBaseSteps(mode: ScanProgressMode): Step[] {
+  if (mode === 'passive') {
+    return [
+      { label: 'Checking SSL/TLS certificate', findingLabel: null, state: 'pending' },
+      { label: 'Testing security headers', findingLabel: null, state: 'pending' },
+      { label: 'Auditing cookies & CORS', findingLabel: null, state: 'pending' },
+      { label: 'Scanning DNS & exposed paths', findingLabel: null, state: 'pending' },
+      { label: 'Generating fix recommendations', findingLabel: null, state: 'pending' },
+    ]
+  }
   return [
-    { label: 'Cloning repository',            findingLabel: null,           state: 'pending' },
-    { label: 'Scanning for exposed secrets',   findingLabel: null,           state: 'pending' },
-    { label: 'Analysing code vulnerabilities', findingLabel: null,           state: 'pending' },
-    { label: 'Checking dependencies',          findingLabel: null,           state: 'pending' },
-    { label: 'Generating fix recommendations', findingLabel: null,           state: 'pending' },
+    { label: 'Cloning repository', findingLabel: null, state: 'pending' },
+    { label: 'Scanning for exposed secrets', findingLabel: null, state: 'pending' },
+    { label: 'Analysing code vulnerabilities', findingLabel: null, state: 'pending' },
+    { label: 'Checking dependencies', findingLabel: null, state: 'pending' },
+    { label: 'Generating fix recommendations', findingLabel: null, state: 'pending' },
   ]
 }
 
-function hydrateFinished(payload: PollPayload): Step[] {
+function hydrateFinished(payload: PollPayload, mode: ScanProgressMode): Step[] {
   const n = payload.totalCount ?? 0
   const suffix =
     payload.status === 'failed'
       ? 'Scan encountered an error.'
       : `${n} ${n === 1 ? 'issue' : 'issues'} · ${payload.criticalCount}c ${payload.highCount}h ${payload.mediumCount}m ${payload.lowCount}l`
-  return makeBaseSteps().map((s, i) => ({
+  return makeBaseSteps(mode).map((s, i) => ({
     ...s,
     state: 'done',
     findingLabel: i === 4 ? suffix : null,
@@ -159,9 +171,9 @@ function TerminalLog({ lines }: TerminalProps) {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function ScanProgress({ siteUrl, scanId, onComplete }: ScanProgressProps) {
+export default function ScanProgress({ siteUrl, scanId, onComplete, mode = 'code' }: ScanProgressProps) {
   const [visible, setVisible] = useState(false)
-  const [steps, setSteps] = useState<Step[]>(makeBaseSteps)
+  const [steps, setSteps] = useState<Step[]>(() => makeBaseSteps(mode))
   const [progress, setProgress] = useState(0)
   const [statusText, setStatusText] = useState('Preparing scan…')
   const [termLines, setTermLines] = useState<string[]>([])
@@ -170,23 +182,32 @@ export default function ScanProgress({ siteUrl, scanId, onComplete }: ScanProgre
   const completedRef = useRef(false)
   const isDemo = scanId === 'demo-123'
 
-  // Reset when scanId changes
+  // Reset when scanId or mode changes
   useEffect(() => {
     completedRef.current = false
-    setSteps(makeBaseSteps())
+    setSteps(makeBaseSteps(mode))
     setProgress(0)
     setStatusText('Preparing scan…')
     setTermLines([])
     setDone(false)
-  }, [scanId])
+  }, [scanId, mode])
 
-  const STATUS_LABELS = [
-    'Connecting to repository…',
-    'Looking for API keys, tokens, and credentials…',
-    'Checking for SQL injection, XSS, and auth issues…',
-    'Auditing npm packages for known CVEs…',
-    'Building remediation guide…',
-  ]
+  const STATUS_LABELS =
+    mode === 'passive'
+      ? [
+          'Verifying certificate chain and expiry…',
+          'Checking CSP, HSTS, X-Frame-Options…',
+          'Reviewing Set-Cookie and CORS headers…',
+          'Looking up SPF/DMARC and sensitive paths…',
+          'Drafting hosting fix prompts…',
+        ]
+      : [
+          'Connecting to repository…',
+          'Looking for API keys, tokens, and credentials…',
+          'Checking for SQL injection, XSS, and auth issues…',
+          'Auditing npm packages for known CVEs…',
+          'Building remediation guide…',
+        ]
 
   // ── Demo choreography ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -254,7 +275,7 @@ export default function ScanProgress({ siteUrl, scanId, onComplete }: ScanProgre
     function finalize(data: PollPayload) {
       if (completedRef.current) return
       completedRef.current = true
-      setSteps(hydrateFinished(data))
+      setSteps(hydrateFinished(data, mode))
       setProgress(100)
       setDone(true)
       const isFail = data.status === 'failed'
@@ -264,7 +285,11 @@ export default function ScanProgress({ siteUrl, scanId, onComplete }: ScanProgre
 
     async function poll() {
       try {
-        const res = await fetch(`/api/scans/${scanId}/status`)
+        const statusPath =
+          mode === 'passive'
+            ? `/api/passive-scan/${scanId}/status`
+            : `/api/scans/${scanId}/status`
+        const res = await fetch(statusPath)
         if (!res.ok) return
         const data = await res.json() as PollPayload & { error?: string }
         if (data.error) return
@@ -281,7 +306,7 @@ export default function ScanProgress({ siteUrl, scanId, onComplete }: ScanProgre
 
     return () => { clearInterval(interval); timers.forEach(clearTimeout) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isDemo, scanId])
+  }, [isDemo, scanId, mode])
 
   const displayHost = siteUrl?.trim()
     ? siteUrl.replace(/^https?:\/\//i, '')
@@ -303,7 +328,7 @@ export default function ScanProgress({ siteUrl, scanId, onComplete }: ScanProgre
           transition={{ duration: 0.45, delay: 0.1, ease: EASE }}
           style={{ fontFamily: 'var(--serif)', fontSize: '1.6rem', fontWeight: 400, letterSpacing: '-0.02em', color: 'var(--ink)', marginBottom: '4px' }}
         >
-          Scanning your app
+          {mode === 'passive' ? 'Scanning your site' : 'Scanning your app'}
         </motion.h2>
         <motion.p
           initial={{ opacity: 0 }}

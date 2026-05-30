@@ -7,15 +7,15 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Key, ShieldAlert, Code2, Package, Database, Globe } from 'lucide-react'
 import { createBrowserClient } from '@/lib/supabase.client'
 import type { User } from '@supabase/supabase-js'
-import GitHubModal from '@/components/GitHubModal'
+import EmailCaptureModal from '@/components/EmailCaptureModal'
 import ScanProgress from '@/components/ScanProgress'
 import { CountUp } from '@/components/motion/CountUp'
 import { HeroAnimatedTitle } from '@/components/ui/background-paths'
 import { GLSLHills } from '@/components/ui/glsl-hills'
 import RadialOrbitalTimeline from '@/components/ui/radial-orbital-timeline'
-import { encodeGithubInstallState, normalizeSiteUrl } from '@/lib/url'
+import { normalizeSiteUrl } from '@/lib/url'
 
-type UIState = 'default' | 'modal' | 'scanning'
+type UIState = 'default' | 'email' | 'scanning'
 
 const EASE = [0.16, 1, 0.3, 1] as const
 const DARK = '#0e0c0b'
@@ -28,9 +28,9 @@ const STATS = [
 ]
 
 const STEPS = [
-  { n: '01', title: 'Enter your deployed URL', body: 'Paste the live address of anything you shipped — Vercel, Netlify, Railway, it doesn\'t matter. We\'ll figure out the rest.' },
-  { n: '02', title: 'Connect your repository', body: 'Authorise VibeSec to read your source code. Read-only access, single repo, revokable at any time. We clone it once then delete everything.' },
-  { n: '03', title: 'Get your report in minutes', body: 'We run gitleaks, semgrep, trivy, and a suite of custom checks tailored for AI-built apps. Free scan shows totals. Unlock for full details and AI-written fix prompts.' },
+  { n: '01', title: 'Enter your deployed URL', body: 'Paste the live address of anything you shipped — Vercel, Netlify, Lovable, Replit, it doesn\'t matter. No GitHub required.' },
+  { n: '02', title: 'We scan from the outside in', body: 'SSL/TLS, security headers, cookies, CORS, DNS records, exposed files, and reputation checks — all without touching your repo.' },
+  { n: '03', title: 'Get your report in seconds', body: 'See how many issues we found for free. Unlock for $29 to get full details, AI fix prompts, and optional GitHub code-level scanning.' },
 ]
 
 const TOOLS = ['Lovable', 'Bolt', 'Cursor', 'v0', 'Replit', 'ChatGPT', 'Claude', 'Windsurf']
@@ -189,12 +189,13 @@ function HomeInner() {
   const [uiState, setUiState] = useState<UIState>('default')
   const [siteUrl, setSiteUrl] = useState('')
   const [inputError, setInputError] = useState(false)
-  const [scanId, setScanId] = useState('demo-123')
+  const [scanToken, setScanToken] = useState('')
+  const [emailLoading, setEmailLoading] = useState(false)
 
   useEffect(() => {
-    const id = searchParams.get('scan')
-    if (!id) return
-    setScanId(id)
+    const token = searchParams.get('scan')
+    if (!token) return
+    setScanToken(token)
     try {
       const pending = sessionStorage.getItem('vibesec_pending_site')
       if (pending) { setSiteUrl(pending.replace(/^https?:\/\//i, '')); sessionStorage.removeItem('vibesec_pending_site') }
@@ -207,20 +208,34 @@ function HomeInner() {
     const trimmed = siteUrl.trim()
     if (!trimmed) { setInputError(true); return }
     setInputError(false)
-    setUiState('modal')
+    setUiState('email')
   }
 
-  function handleConnectGithub() {
+  async function handleEmailSubmit(email: string) {
+    setEmailLoading(true)
     const normalized = normalizeSiteUrl(siteUrl)
-    try { sessionStorage.setItem('vibesec_pending_site', normalized) } catch { /* ignore */ }
-    if (!user) { router.push('/sign-in?redirect_url=' + encodeURIComponent('/')); return }
-    const slug = process.env.NEXT_PUBLIC_GITHUB_APP_SLUG
-    if (!slug) { alert('Missing NEXT_PUBLIC_GITHUB_APP_SLUG — see SETUP.md.'); return }
-    const state = encodeGithubInstallState({ siteUrl: normalized })
-    window.location.assign(`https://github.com/apps/${slug}/installations/new?state=${encodeURIComponent(state)}`)
+    try {
+      const res = await fetch('/api/passive-scan/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: normalized, email }),
+      })
+      const data = await res.json()
+      if (!res.ok || !data.token) {
+        alert(data.error ?? 'Could not start scan. Please try again.')
+        setEmailLoading(false)
+        return
+      }
+      setScanToken(data.token)
+      setUiState('scanning')
+      setEmailLoading(false)
+    } catch {
+      alert('Network error. Please try again.')
+      setEmailLoading(false)
+    }
   }
 
-  function handleScanComplete(id: string) { router.push(`/report/${id}`) }
+  function handleScanComplete(token: string) { router.push(`/scan/${token}`) }
   function handleDemo() { router.push('/demo') }
 
   const navDark = !pastHero
@@ -610,13 +625,24 @@ function HomeInner() {
 
       {/* ── OVERLAYS ── */}
       <AnimatePresence>
-        {uiState === 'modal' && (
-          <GitHubModal key="gh-modal" siteUrl={normalizeSiteUrl(siteUrl)} onClose={() => setUiState('default')} onConfirm={handleConnectGithub} onDemo={handleDemo} />
+        {uiState === 'email' && (
+          <EmailCaptureModal
+            key="email-modal"
+            siteUrl={normalizeSiteUrl(siteUrl)}
+            onClose={() => setUiState('default')}
+            onSubmit={handleEmailSubmit}
+            loading={emailLoading}
+          />
         )}
       </AnimatePresence>
 
-      {uiState === 'scanning' && (
-        <ScanProgress siteUrl={normalizeSiteUrl(siteUrl)} scanId={scanId} onComplete={handleScanComplete} />
+      {uiState === 'scanning' && scanToken && (
+        <ScanProgress
+          siteUrl={normalizeSiteUrl(siteUrl)}
+          scanId={scanToken}
+          mode="passive"
+          onComplete={handleScanComplete}
+        />
       )}
     </>
   )

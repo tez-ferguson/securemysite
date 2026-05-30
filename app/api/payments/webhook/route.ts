@@ -20,21 +20,41 @@ export async function POST(req: NextRequest) {
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session
-    const { scanId, userId, type } = session.metadata!
-
+    const type = session.metadata?.type
     const supabase = createServiceClient()
+
+    if (type === 'passive_unlock') {
+      const token = session.metadata?.token
+      if (token) {
+        await supabase
+          .from('passive_scans')
+          .update({
+            paid: true,
+            stripe_session_id: session.id,
+          })
+          .eq('token', token)
+      }
+      return NextResponse.json({ received: true })
+    }
+
+    const { scanId, userId } = session.metadata!
+    const unlockType = type ?? session.metadata?.type
+
+    if (!scanId || !userId || !unlockType) {
+      return NextResponse.json({ received: true })
+    }
 
     // Create unlock row — this is the authoritative gate checked by the results route
     await supabase.from('scan_unlocks').insert({
       user_id: userId,
       scan_job_id: scanId,
-      unlock_type: type,
+      unlock_type: unlockType,
       stripe_payment_intent_id: session.payment_intent as string,
       stripe_session_id: session.id,
     })
 
     // If agent_fix, mark fix pipeline (scan job stays `complete` once results exist)
-    if (type === 'agent_fix') {
+    if (unlockType === 'agent_fix') {
       await supabase.from('scan_jobs').update({ fix_status: 'queued' }).eq('id', scanId)
     }
   }
