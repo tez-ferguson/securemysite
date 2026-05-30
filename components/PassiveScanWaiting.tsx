@@ -22,7 +22,9 @@ export default function PassiveScanWaiting({ token, siteUrl, onReady }: PassiveS
 
   const poll = useCallback(async () => {
     try {
-      const res = await fetch(`/api/passive-scan/${token}/status`)
+      const res = await fetch(`/api/passive-scan/${token}/status?_=${Date.now()}`, {
+        cache: 'no-store',
+      })
       if (!res.ok) return
       const data = (await res.json()) as PollPayload & { error?: string }
       if (data.error) return

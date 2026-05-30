@@ -2,6 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase'
 import type { Finding } from '@/types'
 
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+export const fetchCache = 'force-no-store'
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: { token: string } },
@@ -23,9 +27,27 @@ export async function GET(
   let status = row.status as string
   let errorMessage = (row.error_message as string | null) ?? null
 
-  // Stuck on running = callback never reached the app (wrong URL, redirect, or old deploy)
+  // Callback finished but status column may still say running briefly, or was wrongly marked failed
+  const hasResults =
+    !!row.completed_at || (row.total_count ?? 0) > 0 || findings.length > 0
+  if (hasResults && status !== 'complete') {
+    status = 'complete'
+    errorMessage = null
+    if (row.status !== 'complete') {
+      await supabase
+        .from('passive_scans')
+        .update({ status: 'complete', error_message: null })
+        .eq('token', params.token)
+    }
+  }
+
+  // Stuck on running with no results = callback never reached the app
   const STALE_MS = 4 * 60 * 1000
-  if ((status === 'running' || status === 'queued') && row.created_at) {
+  if (
+    (status === 'running' || status === 'queued') &&
+    !hasResults &&
+    row.created_at
+  ) {
     const age = Date.now() - new Date(row.created_at as string).getTime()
     if (age > STALE_MS) {
       errorMessage =
@@ -59,5 +81,11 @@ export async function GET(
     }
   }
 
-  return NextResponse.json(payload)
+  return NextResponse.json(payload, {
+    headers: {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, max-age=0',
+      'CDN-Cache-Control': 'no-store',
+      'Vercel-CDN-Cache-Control': 'no-store',
+    },
+  })
 }
