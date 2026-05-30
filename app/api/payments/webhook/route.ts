@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { createServiceClient } from '@/lib/supabase'
+import { sendUnlockReceipt } from '@/lib/email/send'
 import Stripe from 'stripe'
 
 export const dynamic = 'force-dynamic'
@@ -33,6 +34,29 @@ export async function POST(req: NextRequest) {
             stripe_session_id: session.id,
           })
           .eq('token', token)
+
+        const { data: scan } = await supabase
+          .from('passive_scans')
+          .select('token, email, url, total_count, critical_count, high_count, medium_count, low_count')
+          .eq('token', token)
+          .maybeSingle()
+
+        if (scan?.email) {
+          try {
+            await sendUnlockReceipt({
+              token: scan.token,
+              email: scan.email,
+              url: scan.url,
+              total_count: scan.total_count ?? 0,
+              critical_count: scan.critical_count ?? 0,
+              high_count: scan.high_count ?? 0,
+              medium_count: scan.medium_count ?? 0,
+              low_count: scan.low_count ?? 0,
+            })
+          } catch (e) {
+            console.error('Unlock receipt email failed:', e)
+          }
+        }
       }
       return NextResponse.json({ received: true })
     }
