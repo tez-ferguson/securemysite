@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase'
 import { sendReportReady, sendScanFailed } from '@/lib/email/send'
+import { verifySecret } from '@/lib/crypto'
 
 export async function POST(
   req: NextRequest,
   { params }: { params: { token: string } },
 ) {
-  const secret = req.headers.get('x-scanner-secret')?.trim()
-  const expected = process.env.SCANNER_CALLBACK_SECRET?.trim()
-  if (!secret || !expected || secret !== expected) {
+  const secret = req.headers.get('x-scanner-secret')
+  if (!verifySecret(secret, process.env.SCANNER_CALLBACK_SECRET)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

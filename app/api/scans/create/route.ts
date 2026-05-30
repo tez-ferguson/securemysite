@@ -27,6 +27,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid installation id' }, { status: 400 })
   }
 
+  // Verify this installation was registered by the current user to prevent
+  // cross-user installation ID abuse
+  const supabase = createServiceClient()
+  const { data: installRecord } = await supabase
+    .from('github_installations')
+    .select('installation_id')
+    .eq('installation_id', installationId)
+    .eq('user_id', userId)
+    .maybeSingle()
+
+  if (!installRecord) {
+    return NextResponse.json({ error: 'GitHub installation not found or access denied' }, { status: 403 })
+  }
+
   let githubToken: string
   try {
     githubToken = await getInstallationToken(installationId)
@@ -35,7 +49,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Could not authenticate GitHub installation' }, { status: 502 })
   }
 
-  const supabase = createServiceClient()
   const repoName = repoUrl.replace('https://github.com/', '').replace('.git', '')
 
   const { data: job, error } = await supabase

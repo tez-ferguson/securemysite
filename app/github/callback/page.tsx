@@ -55,7 +55,14 @@ function CallbackInner() {
         return
       }
 
-      fetch(`/api/github/installations/${installationId}/repos`)
+      // Register this installation to the current user before listing repos.
+      // This binds the installation ID to the user, preventing cross-user abuse.
+      fetch('/api/github/installations/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ installationId: parseInt(installationId, 10) }),
+      })
+        .then(() => fetch(`/api/github/installations/${installationId}/repos`))
         .then((res) => res.json())
         .then((data) => {
           if (cancelled) return
