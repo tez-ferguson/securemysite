@@ -84,16 +84,24 @@ export default function RadialOrbitalTimeline({ nodes }: RadialOrbitalTimelinePr
   }
 
   return (
+    <>
+      <style>{`
+        @media (max-width: 640px) {
+          .orbit-timeline-root { height: min(460px, 62vh) !important; }
+          .orbit-timeline-scene { transform: scale(0.72); transform-origin: center center; }
+          .orbit-timeline-ring { width: 280px !important; height: 280px !important; }
+        }
+      `}</style>
     <div
       ref={containerRef}
-      className="orbit-bg w-full flex items-center justify-center overflow-hidden"
+      className="orbit-bg orbit-timeline-root w-full flex items-center justify-center overflow-hidden"
       style={{ height: '580px', background: '#0e0c0b' }}
       onClick={handleBgClick}
     >
-      <div className="orbit-bg relative w-full max-w-4xl h-full flex items-center justify-center">
+      <div className="orbit-bg orbit-timeline-scene relative w-full max-w-4xl h-full flex items-center justify-center">
         {/* Orbit ring */}
         <div
-          className="orbit-bg absolute pointer-events-none"
+          className="orbit-bg orbit-timeline-ring absolute pointer-events-none"
           style={{ width: 400, height: 400, borderRadius: '50%', border: '1px solid rgba(247,245,242,0.08)' }}
         />
 
@@ -248,5 +256,6 @@ export default function RadialOrbitalTimeline({ nodes }: RadialOrbitalTimelinePr
         }
       `}</style>
     </div>
+    </>
   )
 }

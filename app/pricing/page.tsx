@@ -68,24 +68,17 @@ export default function PricingPage() {
     <div style={{ minHeight: '100vh', background: '#0e0c0b', fontFamily: 'var(--sans)', color: '#f7f5f2' }}>
 
       {/* Nav */}
-      <nav style={{ borderBottom: '1px solid rgba(247,245,242,0.08)', padding: '0 clamp(16px, 4vw, 40px)', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Link href="/" style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', color: '#f7f5f2', textDecoration: 'none' }}>{BRAND_NAME}</Link>
-        <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+      <nav className="vs-pricing-nav" style={{ borderBottom: '1px solid rgba(247,245,242,0.08)', padding: '0 clamp(12px, 4vw, 40px)', minHeight: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+        <Link href="/" className="vs-pricing-nav-brand" style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(0.72rem, 2.8vw, 1.1rem)', color: '#f7f5f2', textDecoration: 'none', whiteSpace: 'nowrap' }}>{BRAND_NAME}</Link>
+        <div className="vs-pricing-nav-actions" style={{ display: 'flex', gap: '12px', alignItems: 'center', flexShrink: 0 }}>
           {user ? (
-            <Link href="/dashboard" style={{ color: 'rgba(247,245,242,0.55)', fontSize: '0.85rem', textDecoration: 'none' }}>Dashboard</Link>
+            <Link href="/dashboard" style={{ color: 'rgba(247,245,242,0.55)', fontSize: '0.8rem', textDecoration: 'none', whiteSpace: 'nowrap' }}>Dashboard</Link>
           ) : (
-            <Link href="/sign-in" style={{ color: 'rgba(247,245,242,0.55)', fontSize: '0.85rem', textDecoration: 'none' }}>Sign in</Link>
+            <Link href="/sign-in" style={{ color: 'rgba(247,245,242,0.55)', fontSize: '0.8rem', textDecoration: 'none', whiteSpace: 'nowrap' }}>Sign in</Link>
           )}
-          <div style={{ position: 'relative', overflow: 'hidden' }}>
-            <motion.div
-              initial={{ scaleX: 0 }} whileHover={{ scaleX: 1 }}
-              transition={{ duration: 0.25, ease: [0.16,1,0.3,1] }}
-              style={{ position: 'absolute', inset: 0, background: 'rgba(247,245,242,0.1)', transformOrigin: 'left', zIndex: 0 }}
-            />
-            <Link href="/" style={{ position: 'relative', zIndex: 1, border: '1px solid rgba(247,245,242,0.2)', color: '#f7f5f2', padding: '7px 16px', fontSize: '0.85rem', textDecoration: 'none', display: 'inline-block' }}>
-              Start scanning
-            </Link>
-          </div>
+          <Link href="/" style={{ border: '1px solid rgba(247,245,242,0.2)', color: '#f7f5f2', padding: '8px 12px', fontSize: '0.78rem', textDecoration: 'none', display: 'inline-block', whiteSpace: 'nowrap' }}>
+            Scan free
+          </Link>
         </div>
       </nav>
 

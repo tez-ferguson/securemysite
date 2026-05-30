@@ -98,6 +98,16 @@ const PAGE_CSS = `
   .vs-link-dim:hover { opacity: 1; }
   .vs-footer-link { font-size: 0.7rem; color: var(--ink4); text-decoration: none; transition: color 0.15s; }
   .vs-footer-link:hover { color: var(--ink3); }
+  .vs-nav-root { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-width: 0; }
+  .vs-nav-brand-wrap { flex-shrink: 1; min-width: 0; }
+  .vs-nav-actions { display: flex; align-items: center; gap: clamp(12px, 3vw, 32px); flex-shrink: 0; }
+  .vs-nav-links-desktop { display: flex; align-items: center; gap: clamp(16px, 3vw, 32px); }
+  .vs-nav-sign-in {
+    font-size: 0.8rem; text-decoration: none; border: 1px solid;
+    padding: 8px 14px; font-family: var(--sans); font-weight: 400; letter-spacing: 0.01em;
+    white-space: nowrap; line-height: 1.2; flex-shrink: 0; display: inline-block;
+    transition: background 0.15s, color 0.15s;
+  }
   .vs-stat-cell { padding: 20px 36px; text-align: left; cursor: default; transition: transform 0.2s ease, background 0.2s ease; }
   .vs-stat-cell:hover { background: #faf9f7; transform: translateY(-1px); }
   .vs-input-dark { display: flex; border: 1px solid rgba(247,245,242,0.18); background: rgba(247,245,242,0.06); transition: border-color 0.2s, box-shadow 0.2s; }
@@ -107,27 +117,82 @@ const PAGE_CSS = `
   .vs-finding-card:hover { transform: translateY(-2px); box-shadow: 0 4px 24px rgba(17,16,16,0.06); }
   .vs-tool-tag { display: inline-block; padding: 6px 16px; border: 1px solid var(--border); font-size: 0.8rem; color: var(--ink3); font-weight: 300; transition: color 0.15s, border-color 0.15s; cursor: default; }
   .vs-tool-tag:hover { color: var(--ink); border-color: var(--ink3); }
-  @media (max-width: 640px) {
-    .vs-stats { flex-direction: column !important; }
-    .vs-stat-cell { border-right: none !important; border-bottom: 1px solid var(--border) !important; padding: 16px 24px !important; }
-    .vs-stat-cell:last-child { border-bottom: none !important; }
-    .vs-hero-title { font-size: clamp(2rem, 8vw, 3.2rem) !important; }
-    .vs-hero-inner { padding: 72px 20px 48px !important; }
-    .vs-section-inner { padding-left: 20px !important; padding-right: 20px !important; }
-    .vs-steps-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
-    .vs-steps-grid .vs-step-num { display: none !important; }
-    .vs-split-grid { grid-template-columns: 1fr !important; }
+  .vs-brand-logo { font-size: clamp(0.72rem, 2.8vw, 1.15rem); letter-spacing: -0.02em; white-space: nowrap; }
+  .vs-hero-eyebrow { max-width: 100%; padding: 0 8px; }
+  .vs-hero-privacy { text-align: center; line-height: 1.45; padding: 0 8px; flex-wrap: wrap; justify-content: center; }
+  .vs-mobile-section-nav {
+    display: none;
+    position: fixed;
+    top: 49px;
+    left: 0;
+    right: 0;
+    z-index: 99;
+    justify-content: center;
+    gap: 20px;
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(247,245,242,0.08);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .vs-mobile-section-nav a {
+    font-size: 0.72rem;
+    color: rgba(247,245,242,0.55);
+    text-decoration: none;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+  .vs-mobile-section-nav a:hover { color: #f7f5f2; }
+  @media (max-width: 768px) {
+    .vs-mobile-section-nav { display: flex; }
+    .vs-hero-inner { padding-top: 108px !important; }
+    .vs-nav-links-desktop { display: none !important; }
+    .vs-nav-root { padding: 12px 16px !important; }
+    .vs-stats {
+      display: grid !important;
+      grid-template-columns: 1fr 1fr;
+      flex-direction: unset !important;
+      width: 100%;
+      max-width: 520px;
+    }
+    .vs-stat-cell {
+      padding: 14px 16px !important;
+      border-right: 1px solid rgba(247,245,242,0.1) !important;
+      border-bottom: 1px solid rgba(247,245,242,0.1) !important;
+    }
+    .vs-stat-cell:nth-child(2n) { border-right: none !important; }
+    .vs-stat-cell:nth-child(3),
+    .vs-stat-cell:nth-child(4) { border-bottom: none !important; }
+    .vs-stat-cell .vs-stat-value { font-size: 1.45rem !important; }
+    .vs-stat-cell .vs-stat-label { font-size: 0.65rem !important; }
     .vs-pricing-grid { grid-template-columns: 1fr !important; }
-    .vs-section-pad { padding: 60px 20px !important; }
-    .vs-hero-sub { max-width: 100% !important; margin-bottom: 28px !important; }
-    .vs-input-dark { flex-wrap: wrap; }
+    .vs-pricing-grid > * { min-width: 0; }
+    .vs-split-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+    .vs-section-inner { padding-left: 20px !important; padding-right: 20px !important; }
+    .vs-section-pad { padding: 56px 20px !important; }
+    .vs-footer { flex-direction: column; align-items: flex-start !important; gap: 16px !important; }
+    .vs-footer-meta { max-width: 100%; line-height: 1.45; }
+    .vs-footer-links { flex-wrap: wrap; gap: 12px 20px !important; }
+    .vs-orbital-header { padding: 48px 20px 0 !important; }
+  }
+  @media (max-width: 640px) {
+    .vs-hero-title { font-size: clamp(1.85rem, 8vw, 3.2rem) !important; }
+    .vs-hero-inner { padding: 112px 16px 40px !important; }
+    .vs-hero-sub { max-width: 100% !important; margin-bottom: 24px !important; font-size: 0.85rem !important; padding: 0 4px; }
+    .vs-hero-eyebrow { font-size: 0.62rem !important; margin-bottom: 16px !important; }
+    .vs-steps-grid { grid-template-columns: 1fr !important; gap: 8px !important; padding: 24px 0 !important; }
+    .vs-steps-grid .vs-step-num-large { display: none !important; }
+    .vs-input-dark { flex-direction: column; align-items: stretch; }
     .vs-input-prefix { display: none !important; }
-    .vs-input-submit { width: 100%; padding: 14px 16px !important; justify-content: center; }
+    .vs-input-dark input { width: 100%; padding: 14px 16px !important; }
+    .vs-input-submit-wrap { width: 100%; }
+    .vs-input-submit { width: 100%; min-height: 48px !important; padding: 14px 16px !important; }
+    .vs-stats { margin-top: 32px !important; }
   }
   @media (max-width: 380px) {
-    .vs-hero-title { font-size: 1.9rem !important; }
+    .vs-hero-title { font-size: 1.75rem !important; }
+    .vs-brand-logo { font-size: 0.68rem !important; }
+    .vs-nav-sign-in { padding: 7px 12px; font-size: 0.75rem; }
   }
-  .vs-brand-logo { font-size: clamp(0.78rem, 2.5vw, 1.15rem); letter-spacing: -0.02em; white-space: nowrap; }
 `
 
 function ScrollReveal({ children, delay = 0, style }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties }) {
@@ -248,6 +313,7 @@ function HomeInner() {
 
       {/* ── STICKY NAV — transitions between dark (hero) and light (content) ── */}
       <motion.nav
+        className="vs-nav-root"
         animate={{
           background: navDark ? 'rgba(14,12,11,0.85)' : 'rgba(247,245,242,0.97)',
           borderBottomColor: navDark ? 'rgba(247,245,242,0.08)' : '#e2deda',
@@ -258,46 +324,47 @@ function HomeInner() {
           backdropFilter: 'blur(12px)',
           WebkitBackdropFilter: 'blur(12px)',
           borderBottom: '1px solid',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: 'clamp(14px, 3vw, 20px) clamp(16px, 4vw, 48px)',
         }}
       >
         <motion.div
-          className="vs-brand-logo"
+          className="vs-brand-logo vs-nav-brand-wrap"
           animate={{ color: navDark ? WARM : DARK }}
           transition={{ duration: 0.35 }}
           style={{ fontFamily: 'var(--serif)' }}
         >
           {BRAND_NAME}
         </motion.div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-          {['How it works', 'What we scan', 'Pricing'].map((label) => {
-            const href = label === 'Pricing' ? '/pricing' : label === 'How it works' ? '#how-it-works' : '#what-we-scan'
-            const isLink = label === 'Pricing'
-            return isLink
-              ? (
-                <motion.div key={label} animate={{ color: navDark ? 'rgba(247,245,242,0.6)' : '#888580' }} transition={{ duration: 0.35 }}>
-                  <Link href={href} className="vs-link-dim" style={{ color: 'inherit' }}>{label}</Link>
-                </motion.div>
-              ) : (
-                <motion.div key={label} animate={{ color: navDark ? 'rgba(247,245,242,0.6)' : '#888580' }} transition={{ duration: 0.35 }}>
-                  <a href={href} className="vs-link-dim" style={{ color: 'inherit' }}>{label}</a>
-                </motion.div>
-              )
-          })}
+        <div className="vs-nav-actions">
+          <div className="vs-nav-links-desktop">
+            {['How it works', 'What we scan', 'Pricing'].map((label) => {
+              const href = label === 'Pricing' ? '/pricing' : label === 'How it works' ? '#how-it-works' : '#what-we-scan'
+              const isLink = label === 'Pricing'
+              return isLink
+                ? (
+                  <motion.div key={label} animate={{ color: navDark ? 'rgba(247,245,242,0.6)' : '#888580' }} transition={{ duration: 0.35 }}>
+                    <Link href={href} className="vs-link-dim" style={{ color: 'inherit' }}>{label}</Link>
+                  </motion.div>
+                ) : (
+                  <motion.div key={label} animate={{ color: navDark ? 'rgba(247,245,242,0.6)' : '#888580' }} transition={{ duration: 0.35 }}>
+                    <a href={href} className="vs-link-dim" style={{ color: 'inherit' }}>{label}</a>
+                  </motion.div>
+                )
+            })}
+          </div>
           {user ? (
             <motion.div animate={{ color: navDark ? WARM : DARK }} transition={{ duration: 0.35 }}>
-              <Link href="/dashboard" className="vs-link-dim" style={{ color: 'inherit', opacity: 0.75 }}>Dashboard</Link>
+              <Link href="/dashboard" className="vs-link-dim vs-nav-sign-in" style={{ color: 'inherit', opacity: 0.75, border: 'none', padding: 0 }}>Dashboard</Link>
             </motion.div>
           ) : (
             <motion.a
               href="/sign-in"
+              className="vs-nav-sign-in"
               animate={{
                 color: navDark ? WARM : DARK,
                 borderColor: navDark ? 'rgba(247,245,242,0.3)' : '#111010',
               }}
               transition={{ duration: 0.35 }}
-              style={{ fontSize: '0.8rem', textDecoration: 'none', border: '1px solid', padding: '7px 18px', fontFamily: 'var(--sans)', fontWeight: 400, letterSpacing: '0.01em', transition: 'background 0.15s, color 0.15s', display: 'inline-block' }}
               onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = navDark ? 'rgba(247,245,242,0.1)' : '#111010'; (e.currentTarget as HTMLElement).style.color = navDark ? WARM : WARM }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = navDark ? WARM : DARK }}
             >
@@ -306,6 +373,15 @@ function HomeInner() {
           )}
         </div>
       </motion.nav>
+
+      <div
+        className="vs-mobile-section-nav"
+        style={{ background: navDark ? 'rgba(14,12,11,0.88)' : 'rgba(247,245,242,0.97)' }}
+      >
+        <a href="#how-it-works" style={{ color: navDark ? 'rgba(247,245,242,0.55)' : '#888580' }}>How it works</a>
+        <a href="#what-we-scan" style={{ color: navDark ? 'rgba(247,245,242,0.55)' : '#888580' }}>What we scan</a>
+        <Link href="/pricing" style={{ color: navDark ? 'rgba(247,245,242,0.55)' : '#888580', fontSize: '0.72rem', textDecoration: 'none' }}>Pricing</Link>
+      </div>
 
       {/* ── DARK HERO with GLSL hills ── */}
       <div ref={heroRef} style={{ position: 'relative', background: DARK, overflow: 'hidden' }}>
@@ -336,6 +412,7 @@ function HomeInner() {
           >
             {/* Eyebrow */}
             <motion.p
+              className="vs-hero-eyebrow"
               initial={{ opacity: 0, letterSpacing: '0.04em' }}
               animate={{ opacity: 1, letterSpacing: '0.14em' }}
               transition={{ duration: 0.8, delay: 0.3, ease: EASE }}
@@ -386,7 +463,7 @@ function HomeInner() {
                   style={{ flex: 1, border: 'none', outline: 'none', padding: '15px 16px', fontFamily: 'var(--sans)', fontSize: '0.9rem', fontWeight: 300, color: WARM, background: 'transparent', minWidth: 0 }}
                 />
                 {/* Ink-fill button on dark bg */}
-                <div style={{ position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
+                <div className="vs-input-submit-wrap" style={{ position: 'relative', overflow: 'hidden', flexShrink: 0 }}>
                   <motion.div
                     initial={{ scaleX: 0 }}
                     whileHover={{ scaleX: 1 }}
@@ -394,6 +471,7 @@ function HomeInner() {
                     style={{ position: 'absolute', inset: 0, background: 'rgba(247,245,242,0.12)', transformOrigin: 'left', zIndex: 0 }}
                   />
                   <button
+                    type="button"
                     onClick={handleScan}
                     className="vs-input-submit"
                     style={{ position: 'relative', zIndex: 1, padding: '0 22px', height: '100%', minHeight: '52px', background: 'transparent', border: 'none', color: WARM, fontFamily: 'var(--sans)', fontSize: '0.8rem', fontWeight: 400, letterSpacing: '0.03em', cursor: 'pointer', whiteSpace: 'nowrap' }}
@@ -403,7 +481,7 @@ function HomeInner() {
                 </div>
               </div>
 
-              <p style={{ marginTop: '12px', fontSize: '0.72rem', color: 'rgba(247,245,242,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+              <p className="vs-hero-privacy" style={{ marginTop: '12px', fontSize: '0.72rem', color: 'rgba(247,245,242,0.3)', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <span style={{ display: 'inline-block', width: '5px', height: '5px', background: '#5a9e6f', borderRadius: '50%', flexShrink: 0 }} />
                 Code is never stored — scanned in an isolated container, then deleted
               </p>
@@ -428,10 +506,10 @@ function HomeInner() {
                   onMouseEnter={(e) => (e.currentTarget as HTMLElement).style.background = 'rgba(247,245,242,0.06)'}
                   onMouseLeave={(e) => (e.currentTarget as HTMLElement).style.background = 'transparent'}
                 >
-                  <span style={{ fontFamily: 'var(--serif)', fontSize: '1.7rem', color: WARM, display: 'block', lineHeight: 1, marginBottom: '4px' }}>
+                  <span className="vs-stat-value" style={{ fontFamily: 'var(--serif)', fontSize: '1.7rem', color: WARM, display: 'block', lineHeight: 1, marginBottom: '4px' }}>
                     <CountUp to={stat.value} suffix={stat.suffix} duration={1.4} />
                   </span>
-                  <span style={{ fontSize: '0.7rem', color: 'rgba(247,245,242,0.4)', letterSpacing: '0.02em', lineHeight: 1.4, whiteSpace: 'pre-line' }}>
+                  <span className="vs-stat-label" style={{ fontSize: '0.7rem', color: 'rgba(247,245,242,0.4)', letterSpacing: '0.02em', lineHeight: 1.4, whiteSpace: 'pre-line' }}>
                     {stat.label}
                   </span>
                 </div>
@@ -474,7 +552,7 @@ function HomeInner() {
                 <ScrollReveal key={step.n} delay={i * 0.1}>
                   <DrawLine />
                   <div className="vs-steps-grid" style={{ display: 'grid', gridTemplateColumns: '80px 1fr 1fr', gap: '32px', padding: '40px 0', alignItems: 'start' }}>
-                    <div style={{ fontFamily: 'var(--serif)', fontSize: '3.5rem', color: 'var(--border)', lineHeight: 1, userSelect: 'none', letterSpacing: '-0.02em' }}>{step.n}</div>
+                    <div className="vs-step-num-large" style={{ fontFamily: 'var(--serif)', fontSize: '3.5rem', color: 'var(--border)', lineHeight: 1, userSelect: 'none', letterSpacing: '-0.02em' }}>{step.n}</div>
                     <h3 style={{ fontFamily: 'var(--serif)', fontSize: '1.4rem', fontWeight: 400, color: 'var(--ink)', lineHeight: 1.2, letterSpacing: '-0.01em', paddingTop: '6px' }}>{step.title}</h3>
                     <p style={{ fontSize: '0.88rem', color: 'var(--ink3)', lineHeight: 1.7, fontWeight: 300, paddingTop: '6px' }}>{step.body}</p>
                   </div>
@@ -488,7 +566,7 @@ function HomeInner() {
         {/* ── WHAT WE SCAN — orbital ── */}
         <section id="what-we-scan" style={{ borderTop: '1px solid rgba(247,245,242,0.08)', background: '#0e0c0b' }}>
           {/* Text header */}
-          <div className="vs-section-inner" style={{ maxWidth: '1100px', margin: '0 auto', padding: '72px 48px 0' }}>
+          <div className="vs-section-inner vs-orbital-header" style={{ maxWidth: '1100px', margin: '0 auto', padding: '72px 48px 0' }}>
             <ScrollReveal>
               <p style={{ fontSize: '0.68rem', letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(247,245,242,0.35)', marginBottom: '16px' }}>What we scan for</p>
               <h2 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(1.8rem, 4vw, 3.2rem)', fontWeight: 400, letterSpacing: '-0.02em', color: '#f7f5f2', lineHeight: 1.1, maxWidth: '560px' }}>
@@ -612,13 +690,15 @@ function HomeInner() {
         </section>
 
         {/* ── FOOTER ── */}
-        <footer style={{ borderTop: '1px solid var(--border)', padding: 'clamp(16px, 3vw, 24px) clamp(16px, 4vw, 48px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+        <footer className="vs-footer" style={{ borderTop: '1px solid var(--border)', padding: 'clamp(16px, 3vw, 24px) clamp(16px, 4vw, 48px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
           <div className="vs-brand-logo" style={{ fontFamily: 'var(--serif)', color: 'var(--ink)' }}>{BRAND_NAME}</div>
-          <div style={{ fontSize: '0.7rem', color: 'var(--ink4)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <span style={{ width: '5px', height: '5px', background: '#5a9e6f', borderRadius: '50%', display: 'inline-block' }} />
+          <div className="vs-footer-meta" style={{ fontSize: '0.7rem', color: 'var(--ink4)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ width: '5px', height: '5px', background: '#5a9e6f', borderRadius: '50%', display: 'inline-block', flexShrink: 0 }} />
             Source code deleted after every scan
           </div>
-          <div style={{ display: 'flex', gap: '20px' }}>
+          <div className="vs-footer-links" style={{ display: 'flex', gap: '20px' }}>
+            <a href="#how-it-works" className="vs-footer-link">How it works</a>
+            <a href="#what-we-scan" className="vs-footer-link">What we scan</a>
             <a href="mailto:hello@vibesec.app" className="vs-footer-link">Contact</a>
             <Link href="/pricing" className="vs-footer-link">Pricing</Link>
             <Link href="/demo" className="vs-footer-link">Demo</Link>

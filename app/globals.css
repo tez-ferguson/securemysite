@@ -159,6 +159,11 @@ body {
   .report-inner { padding: 24px 16px 64px !important; }
 }
 
+/* ─── Shared mobile utilities ─────────────────────────── */
+@media (max-width: 768px) {
+  .vs-pricing-grid { grid-template-columns: 1fr !important; }
+}
+
 /* ─── Passive scan report responsive ─────────────────── */
 @media (max-width: 768px) {
   .scan-report-nav {
