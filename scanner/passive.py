@@ -370,6 +370,15 @@ def _template_fix(finding: dict) -> str:
     )
 
 
+def _canonical_callback_url(callback_url: str) -> str:
+    """Avoid apex→www 307 on POST; production redirects bare domain to www."""
+    return callback_url.replace(
+        "https://ismysitesecure.ai/", "https://www.ismysitesecure.ai/"
+    ).replace(
+        "http://ismysitesecure.ai/", "https://www.ismysitesecure.ai/"
+    )
+
+
 def _post_callback(
     callback_url: str,
     callback_secret: str,
@@ -379,18 +388,19 @@ def _post_callback(
     failed: bool = False,
     error_message: str | None = None,
 ) -> None:
-    httpx.post(
-        callback_url,
-        json={
-            "findings": findings,
-            "counts": counts,
-            "failed": failed,
-            "error_message": error_message,
-        },
-        headers={"x-scanner-secret": callback_secret},
-        timeout=30,
-        follow_redirects=True,
-    ).raise_for_status()
+    target = _canonical_callback_url(callback_url)
+    payload = {
+        "findings": findings,
+        "counts": counts,
+        "failed": failed,
+        "error_message": error_message,
+    }
+    headers = {"x-scanner-secret": callback_secret}
+    with httpx.Client(follow_redirects=True, timeout=30) as client:
+        resp = client.post(target, json=payload, headers=headers)
+    if resp.status_code >= 400:
+        print(f"Callback failed {resp.status_code} {target}: {resp.text[:300]}")
+    resp.raise_for_status()
 
 
 @app.function(
@@ -460,7 +470,8 @@ def run_passive_scan(
             finding["id"] = str(uuid.uuid4())
             finding["fix_prompt"] = _template_fix(finding)
 
-        for finding in deduped[:3]:
+        # Kimi for top 2 only (with 20s timeout each) — keeps scans under ~2 min
+        for finding in deduped[:2]:
             finding["fix_prompt"] = generate_fix_prompt(finding, context="passive")
 
         counts = {

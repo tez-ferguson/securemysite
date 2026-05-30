@@ -6,8 +6,9 @@ export async function POST(
   req: NextRequest,
   { params }: { params: { token: string } },
 ) {
-  const secret = req.headers.get('x-scanner-secret')
-  if (secret !== process.env.SCANNER_CALLBACK_SECRET) {
+  const secret = req.headers.get('x-scanner-secret')?.trim()
+  const expected = process.env.SCANNER_CALLBACK_SECRET?.trim()
+  if (!secret || !expected || secret !== expected) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 

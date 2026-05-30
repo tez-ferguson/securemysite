@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase'
 import { triggerPassiveScan } from '@/lib/modal'
-import { normalizeSiteUrl } from '@/lib/url'
+import { getCallbackAppUrl, normalizeSiteUrl } from '@/lib/url'
 import { z } from 'zod'
 
 const schema = z.object({
@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
   }
 
   const token = row.token as string
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, '')
+  const appUrl = getCallbackAppUrl()
   if (!appUrl) {
     return NextResponse.json({ error: 'Server misconfigured' }, { status: 500 })
   }

@@ -17,6 +17,8 @@ interface PassiveScanWaitingProps {
 export default function PassiveScanWaiting({ token, siteUrl, onReady }: PassiveScanWaitingProps) {
   const [message, setMessage] = useState('Finishing your scan on our servers…')
   const [dots, setDots] = useState(0)
+  const [stuckHint, setStuckHint] = useState(false)
+  const startedAt = useState(() => Date.now())[0]
 
   const poll = useCallback(async () => {
     try {
@@ -24,11 +26,21 @@ export default function PassiveScanWaiting({ token, siteUrl, onReady }: PassiveS
       if (!res.ok) return
       const data = (await res.json()) as PollPayload & { error?: string }
       if (data.error) return
-      if (data.status === 'complete' || data.status === 'failed') {
+      if (data.status === 'failed') {
+        setMessage(data.errorMessage ?? 'Scan could not finish')
         onReady(data)
+        return
+      }
+      if (data.status === 'complete') {
+        onReady(data)
+        return
+      }
+      if (Date.now() - startedAt > 90_000) {
+        setStuckHint(true)
+        setMessage('Still saving results — this usually finishes within 2 minutes')
       }
     } catch { /* retry */ }
-  }, [token, onReady])
+  }, [token, onReady, startedAt])
 
   useEffect(() => {
     poll()
@@ -67,6 +79,12 @@ export default function PassiveScanWaiting({ token, siteUrl, onReady }: PassiveS
       <p style={{ marginTop: '20px', fontSize: '0.78rem', color: 'var(--ink4)' }}>
         This page will update automatically — no need to refresh.
       </p>
+      {stuckHint ? (
+        <p style={{ marginTop: '24px', fontSize: '0.8rem', color: 'var(--ink3)', maxWidth: '420px', lineHeight: 1.55 }}>
+          If this lasts more than a few minutes, the last scan may be stuck. After deploying the latest app,
+          start a <a href="/" style={{ color: 'var(--ink)' }}>new scan</a> — older links won&apos;t recover on their own.
+        </p>
+      ) : null}
     </main>
   )
 }

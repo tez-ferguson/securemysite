@@ -12,7 +12,7 @@ def _client():
     api_key = os.environ.get("MOONSHOT_API_KEY")
     if not api_key:
         return None
-    return OpenAI(api_key=api_key, base_url=MOONSHOT_BASE_URL)
+    return OpenAI(api_key=api_key, base_url=MOONSHOT_BASE_URL, timeout=20.0)
 
 
 def generate_fix_prompt(finding: dict, *, context: str = "code") -> str:

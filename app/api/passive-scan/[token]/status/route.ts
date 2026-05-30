@@ -20,7 +20,23 @@ export async function GET(
 
   const findings = (row.findings as Finding[] | null) ?? []
   const paid = row.paid as boolean
-  const status = row.status as string
+  let status = row.status as string
+  let errorMessage = (row.error_message as string | null) ?? null
+
+  // Stuck on running = callback never reached the app (wrong URL, redirect, or old deploy)
+  const STALE_MS = 4 * 60 * 1000
+  if ((status === 'running' || status === 'queued') && row.created_at) {
+    const age = Date.now() - new Date(row.created_at as string).getTime()
+    if (age > STALE_MS) {
+      errorMessage =
+        'Scan timed out — results never reached the server. Set NEXT_PUBLIC_APP_URL to your live site URL (no redirect), redeploy Vercel, run modal deploy passive.py, then start a new scan.'
+      await supabase
+        .from('passive_scans')
+        .update({ status: 'failed', error_message: errorMessage })
+        .eq('token', params.token)
+      status = 'failed'
+    }
+  }
 
   const payload: Record<string, unknown> = {
     status,
@@ -31,7 +47,7 @@ export async function GET(
     mediumCount: row.medium_count ?? 0,
     lowCount: row.low_count ?? 0,
     paid,
-    errorMessage: row.error_message ?? null,
+    errorMessage,
   }
 
   if (status === 'complete' || status === 'failed') {
