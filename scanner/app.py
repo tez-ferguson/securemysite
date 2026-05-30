@@ -22,7 +22,7 @@ trigger_image = modal.Image.debian_slim().pip_install(["fastapi[standard]", "pyd
 scan_image = (
     modal.Image.debian_slim()
     .apt_install(["git", "curl", "wget"])
-    .pip_install(["semgrep", "anthropic", "gitpython", "httpx"])
+    .pip_install(["semgrep", "openai", "gitpython", "httpx"])
     .run_commands([
         # gitleaks for secrets
         "curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.18.0/gitleaks_8.18.0_linux_x64.tar.gz | tar -xz -C /usr/local/bin",
@@ -200,38 +200,12 @@ def run_custom_checks(repo_path: str) -> list[dict]:
     return findings
 
 
-def generate_fix_prompt(finding: dict, client) -> str:
-    """Call Claude to generate a Lovable/Cursor-friendly fix prompt."""
-    try:
-        message = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=400,
-            messages=[{
-                "role": "user",
-                "content": f"""Generate a concise fix prompt for the following security issue, formatted for pasting directly into Lovable, Bolt, or Cursor.
-The prompt should tell the AI exactly what to do to fix the issue. Be specific about file names, line numbers, and the exact change needed.
-Start with "Fix the following security issue:" and keep it under 150 words.
-
-Issue type: {finding['type']}
-Severity: {finding['severity']}
-File: {finding['file']}
-Line: {finding['line']}
-Description: {finding['description']}
-Code snippet: {finding['snippet']}"""
-            }]
-        )
-        return message.content[0].text
-    except Exception as e:
-        # Fallback fix prompt if Claude call fails
-        return f"Fix the following security issue in {finding['file']} at line {finding['line']}: {finding['description']}. Review the code and apply security best practices."
-
-
 @app.function(
     image=scan_image,
     timeout=300,
     memory=1024,
     secrets=[
-        modal.Secret.from_name("anthropic-key"),
+        modal.Secret.from_name("moonshot-key"),
         modal.Secret.from_name("app-callback-secret"),
     ]
 )
@@ -243,15 +217,12 @@ def run_scan(
     callback_secret: str,
     github_token: str,  # Installation token passed in from Next.js
 ) -> dict:
-    import anthropic
     import git
+    from llm import generate_fix_prompt
 
     with tempfile.TemporaryDirectory() as tmpdir:
         clone_url = repo_url.replace("https://github.com/", f"https://x-access-token:{github_token}@github.com/")
         repo = git.Repo.clone_from(clone_url, tmpdir)
-
-        # Initialize Anthropic client
-        claude_client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
 
         # Run all scanners
         all_findings = []
@@ -275,7 +246,7 @@ def run_scan(
 
         # Generate fix prompts (limit to first 20 to control API costs)
         for finding in deduped[:20]:
-            finding["fix_prompt"] = generate_fix_prompt(finding, claude_client)
+            finding["fix_prompt"] = generate_fix_prompt(finding, context="code")
         for finding in deduped[20:]:
             finding["fix_prompt"] = (
                 f"Fix the following security issue in {finding['file']} at line {finding['line']}: "

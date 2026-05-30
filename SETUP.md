@@ -39,9 +39,13 @@ Copy `.env.example` to `.env.local` and fill in each value:
 1. Install Modal: `pip install modal`
 2. Authenticate: `modal setup`
 3. Create secrets in Modal dashboard:
-   - `anthropic-key`: Set `ANTHROPIC_API_KEY`
-   - `app-callback-secret`: Set `APP_CALLBACK_SECRET`
-4. Deploy scanner: `modal deploy scanner/app.py`
+   - `moonshot-key`: Set `MOONSHOT_API_KEY` (from https://platform.moonshot.ai)
+   - `app-callback-secret`: Set `APP_CALLBACK_SECRET` (same value as `SCANNER_CALLBACK_SECRET` in Vercel)
+4. Deploy scanners (from `scanner/` folder):
+   ```bash
+   .venv/bin/modal deploy app.py
+   .venv/bin/modal deploy passive.py
+   ```
 5. Copy the function URL to `MODAL_FUNCTION_URL` in your env
 
 ### GitHub App

@@ -57,7 +57,7 @@ const DEMO_TERMINAL_LINES = [
   'node-fetch@2.6.1 — ReDoS (CVE-2022-0235)',
   '$ python custom_checks.py',
   'SUPABASE_SERVICE_ROLE exposed in components/Analytics.tsx',
-  '$ claude generate-fix-prompts (20 findings)',
+  '$ kimi generate-fix-prompts (20 findings)',
   'Fix prompts drafted. Sending results…',
   '→ Callback OK',
 ]

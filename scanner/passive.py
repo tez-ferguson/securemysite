@@ -25,7 +25,7 @@ scan_image = (
         "httpx>=0.27.0",
         "cryptography>=42.0.0",
         "dnspython>=2.6.0",
-        "anthropic>=0.28.0",
+        "openai>=1.40.0",
     ])
 )
 
@@ -362,39 +362,12 @@ def check_basic_surface(base_url: str, html: str) -> list[dict]:
     return findings
 
 
-def generate_fix_prompt(finding: dict, client) -> str:
-    try:
-        message = client.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=400,
-            messages=[{
-                "role": "user",
-                "content": f"""Generate a concise fix prompt for this infrastructure/hosting security issue.
-Format for pasting into Lovable, Bolt, Vercel settings, or Cursor.
-Focus on headers, TLS, DNS, or deployment config — not source code refactors unless needed.
-Start with "Fix the following security issue:" and keep under 150 words.
-
-Issue type: {finding['type']}
-Severity: {finding['severity']}
-Location: {finding['file']}
-Description: {finding['description']}
-Context: {finding['snippet']}""",
-            }],
-        )
-        return message.content[0].text
-    except Exception:
-        return (
-            f"Fix the following security issue at {finding['file']}: "
-            f"{finding['description']}. Apply hosting and HTTP security best practices."
-        )
-
-
 @app.function(
     image=scan_image,
     timeout=180,
     memory=512,
     secrets=[
-        modal.Secret.from_name("anthropic-key"),
+        modal.Secret.from_name("moonshot-key"),
         modal.Secret.from_name("app-callback-secret"),
     ],
 )
@@ -404,7 +377,7 @@ def run_passive_scan(
     callback_url: str,
     callback_secret: str,
 ) -> dict:
-    import anthropic
+    from llm import generate_fix_prompt
 
     base = _base_url(url)
     host = _host_from_url(url)
@@ -450,20 +423,8 @@ def run_passive_scan(
     for finding in deduped:
         finding["id"] = str(uuid.uuid4())
 
-    claude_client = None
-    try:
-        claude_client = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
-    except Exception:
-        pass
-
     for finding in deduped[:10]:
-        if claude_client:
-            finding["fix_prompt"] = generate_fix_prompt(finding, claude_client)
-        else:
-            finding["fix_prompt"] = (
-                f"Fix the following security issue at {finding['file']}: "
-                f"{finding['description']}. Apply security best practices."
-            )
+        finding["fix_prompt"] = generate_fix_prompt(finding, context="passive")
     for finding in deduped[10:]:
         finding["fix_prompt"] = (
             f"Fix the following security issue at {finding['file']}: "
