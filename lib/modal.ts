@@ -33,22 +33,42 @@ export async function triggerScan(params: {
   return res.json() as Promise<{ queued?: boolean }>
 }
 
+function friendlyModalError(status: number, body: string): string {
+  const lower = body.toLowerCase()
+  if (status === 401 || lower.includes('unauthorized')) {
+    return 'Scanner secret mismatch — Vercel SCANNER_CALLBACK_SECRET must match Modal APP_CALLBACK_SECRET'
+  }
+  if (status === 404) {
+    return 'Modal URL not found — check MODAL_PASSIVE_FUNCTION_URL in Vercel (redeploy passive.py and paste the new URL)'
+  }
+  if (status >= 500) {
+    return 'Modal scanner error — check Modal dashboard logs'
+  }
+  const snippet = body.slice(0, 120).replace(/\s+/g, ' ')
+  return `Modal returned ${status}${snippet ? `: ${snippet}` : ''}`
+}
+
 export async function triggerPassiveScan(params: {
   token: string
   url: string
   callbackUrl: string
   callbackSecret: string
 }) {
-  const url = process.env.MODAL_PASSIVE_FUNCTION_URL
+  const url = process.env.MODAL_PASSIVE_FUNCTION_URL?.trim()
   if (!url) {
     throw new Error('MODAL_PASSIVE_FUNCTION_URL is not configured')
+  }
+
+  const triggerSecret = process.env.SCANNER_CALLBACK_SECRET?.trim()
+  if (!triggerSecret) {
+    throw new Error('SCANNER_CALLBACK_SECRET is not configured')
   }
 
   const res = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'x-trigger-secret': process.env.SCANNER_CALLBACK_SECRET!,
+      'x-trigger-secret': triggerSecret,
     },
     body: JSON.stringify({
       token: params.token,
@@ -59,7 +79,8 @@ export async function triggerPassiveScan(params: {
   })
 
   if (!res.ok) {
-    throw new Error(`Modal passive trigger failed: ${res.status} ${await res.text()}`)
+    const body = await res.text()
+    throw new Error(friendlyModalError(res.status, body))
   }
 
   return res.json() as Promise<{ queued?: boolean }>

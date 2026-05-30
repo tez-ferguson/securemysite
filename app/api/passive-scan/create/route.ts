@@ -56,9 +56,12 @@ export async function POST(req: NextRequest) {
   }
 
   const callbackUrl = `${appUrl}/api/passive-scan/${token}/callback`
-  const callbackSecret = process.env.SCANNER_CALLBACK_SECRET
+  const callbackSecret = process.env.SCANNER_CALLBACK_SECRET?.trim()
   if (!callbackSecret) {
-    return NextResponse.json({ error: 'Server misconfigured' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'SCANNER_CALLBACK_SECRET is not set in Vercel environment variables' },
+      { status: 500 },
+    )
   }
 
   try {
@@ -67,20 +70,16 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error('Passive Modal trigger failed:', err)
     const message = err instanceof Error ? err.message : 'Scanner trigger failed'
-    await supabase
+    const failPayload: { status: string; error_message?: string } = { status: 'failed' }
+    failPayload.error_message = message.slice(0, 500)
+    const { error: failErr } = await supabase
       .from('passive_scans')
-      .update({ status: 'failed', error_message: message.slice(0, 500) })
+      .update(failPayload)
       .eq('token', token)
-    return NextResponse.json(
-      {
-        error: message.includes('401') || message.includes('Unauthorized')
-          ? 'Scanner secret mismatch — check SCANNER_CALLBACK_SECRET matches Modal APP_CALLBACK_SECRET'
-          : message.includes('MODAL_PASSIVE')
-            ? 'Scanner not configured on server'
-            : 'Could not start scan',
-      },
-      { status: 502 },
-    )
+    if (failErr) {
+      await supabase.from('passive_scans').update({ status: 'failed' }).eq('token', token)
+    }
+    return NextResponse.json({ error: message }, { status: 502 })
   }
 
   return NextResponse.json({ token })
