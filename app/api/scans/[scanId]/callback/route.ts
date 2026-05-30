@@ -3,14 +3,24 @@ import { getUserEmail } from '@/lib/auth'
 import { Resend } from 'resend'
 import { createServiceClient } from '@/lib/supabase'
 import { BRAND_NAME } from '@/lib/brand'
+import { verifySecret } from '@/lib/crypto'
+
+/** Escape HTML special characters to prevent injection in email bodies. */
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;')
+}
 
 export async function POST(
   req: NextRequest,
   { params }: { params: { scanId: string } },
 ) {
-  const secret = req.headers.get('x-scanner-secret')?.trim()
-  const expected = process.env.SCANNER_CALLBACK_SECRET?.trim()
-  if (!secret || !expected || secret !== expected) {
+  const secret = req.headers.get('x-scanner-secret')
+  if (!verifySecret(secret, process.env.SCANNER_CALLBACK_SECRET)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -59,8 +69,9 @@ export async function POST(
       const addr = await getUserEmail(job.user_id)
       if (addr) {
         const subject = `Your ${BRAND_NAME} scan finished — ${counts.total} vulnerabilities found`
-        const label = job.repo_name ?? job.site_url ?? 'your project'
-        const reportUrl = `${process.env.NEXT_PUBLIC_APP_URL}/report/${params.scanId}`
+        // Escape user-supplied values to prevent HTML injection in the email body
+        const label = escapeHtml(job.repo_name ?? job.site_url ?? 'your project')
+        const reportUrl = encodeURI(`${process.env.NEXT_PUBLIC_APP_URL}/report/${params.scanId}`)
         const resend = new Resend(process.env.RESEND_API_KEY)
         const from = process.env.RESEND_FROM_EMAIL ?? `${BRAND_NAME} <onboarding@resend.dev>`
         await resend.emails.send({

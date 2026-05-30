@@ -27,6 +27,7 @@ export async function POST(req: NextRequest) {
     if (type === 'passive_unlock') {
       const token = session.metadata?.token
       if (token) {
+        // Idempotent: only update if not already paid to handle Stripe retries
         await supabase
           .from('passive_scans')
           .update({
@@ -34,6 +35,7 @@ export async function POST(req: NextRequest) {
             stripe_session_id: session.id,
           })
           .eq('token', token)
+          .eq('paid', false)
 
         const { data: scan } = await supabase
           .from('passive_scans')
@@ -68,14 +70,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ received: true })
     }
 
-    // Create unlock row — this is the authoritative gate checked by the results route
-    await supabase.from('scan_unlocks').insert({
-      user_id: userId,
-      scan_job_id: scanId,
-      unlock_type: unlockType,
-      stripe_payment_intent_id: session.payment_intent as string,
-      stripe_session_id: session.id,
-    })
+    // Idempotent upsert: the unique index on stripe_session_id ensures a
+    // duplicate checkout.session.completed event does not create a second row.
+    const { error: insertError } = await supabase.from('scan_unlocks').upsert(
+      {
+        user_id: userId,
+        scan_job_id: scanId,
+        unlock_type: unlockType,
+        stripe_payment_intent_id: session.payment_intent as string,
+        stripe_session_id: session.id,
+      },
+      { onConflict: 'stripe_session_id', ignoreDuplicates: true },
+    )
+
+    if (insertError) {
+      console.error('scan_unlocks upsert error:', insertError)
+    }
 
     // If agent_fix, mark fix pipeline (scan job stays `complete` once results exist)
     if (unlockType === 'agent_fix') {

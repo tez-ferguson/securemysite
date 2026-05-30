@@ -4,6 +4,12 @@ import { createMiddlewareClient } from '@/lib/supabase.server'
 // Explicitly public (anonymous passive scan flow)
 const PUBLIC_PREFIXES = ['/scan/', '/api/passive-scan/']
 
+// Scanner callback routes are authenticated by shared secret (x-scanner-secret),
+// not by user session. They must not be redirected to sign-in.
+const PUBLIC_EXACT_PATTERNS = [
+  /^\/api\/scans\/[^/]+\/callback$/,
+]
+
 const PROTECTED = [
   /^\/dashboard/,
   /^\/report\//,
@@ -23,7 +29,10 @@ export async function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl
 
-  const isExplicitlyPublic = PUBLIC_PREFIXES.some((p) => pathname.startsWith(p))
+  const isExplicitlyPublic =
+    PUBLIC_PREFIXES.some((p) => pathname.startsWith(p)) ||
+    PUBLIC_EXACT_PATTERNS.some((re) => re.test(pathname))
+
   const isProtected = !isExplicitlyPublic && PROTECTED.some((re) => re.test(pathname))
 
   if (isProtected && !user) {

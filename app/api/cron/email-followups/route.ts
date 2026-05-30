@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase'
 import { sendFollowUp } from '@/lib/email/send'
 import type { FollowUpStage } from '@/lib/email/types'
+import { verifySecret } from '@/lib/crypto'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 60
@@ -10,10 +11,9 @@ const BATCH_LIMIT = 50
 const MS_DAY = 24 * 60 * 60 * 1000
 
 function authorize(req: NextRequest): boolean {
-  const secret = process.env.CRON_SECRET?.trim()
-  if (!secret) return false
   const auth = req.headers.get('authorization')
-  return auth === `Bearer ${secret}`
+  const token = auth?.startsWith('Bearer ') ? auth.slice(7) : null
+  return verifySecret(token, process.env.CRON_SECRET)
 }
 
 type ScanRow = {
