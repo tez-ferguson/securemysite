@@ -213,7 +213,7 @@ export function PricingSection({
   className?: string
 }) {
   return (
-    <div className={cn('flex w-full flex-col items-center', className)}>
+    <div className={cn('flex w-full flex-col items-center', className)} style={{ maxWidth: '100%', overflowX: 'hidden' }}>
       <div className="mx-auto mb-12 max-w-xl space-y-3 text-center">
         <h2
           className="text-3xl font-light tracking-tight text-[#f7f5f2] md:text-4xl"
