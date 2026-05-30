@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Instrument_Serif, DM_Sans } from 'next/font/google'
 import './globals.css'
+import { BRAND_NAME } from '@/lib/brand'
 
 const instrumentSerif = Instrument_Serif({
   subsets: ['latin'],
@@ -18,9 +19,9 @@ const dmSans = DM_Sans({
 })
 
 export const metadata: Metadata = {
-  title: 'VibeSec — Security scanning for vibe-coded apps',
+  title: `${BRAND_NAME} — Security scanning for vibe-coded apps`,
   description:
-    'VibeSec automatically scans your vibe-coded apps for security vulnerabilities, misconfigurations, and exposed secrets — so you can ship fast without shipping risk.',
+    `${BRAND_NAME} scans your live site and codebase for security vulnerabilities, misconfigurations, and exposed secrets — so you can ship fast without shipping risk.`,
 }
 
 export default function RootLayout({

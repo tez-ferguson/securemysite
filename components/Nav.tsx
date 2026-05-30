@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createBrowserClient } from '@/lib/supabase.client'
 import type { User } from '@supabase/supabase-js'
+import { BRAND_NAME } from '@/lib/brand'
 
 interface NavProps {
   backHref?: string
@@ -23,6 +24,7 @@ const NAV_CSS = `
   .vs-nav-sign-in:hover { background: var(--ink); color: var(--bg); }
   .vs-nav-sign-out { font-size: 0.8rem; color: var(--ink3); background: none; border: none; cursor: pointer; font-family: var(--sans); padding: 0; transition: color 0.15s; }
   .vs-nav-sign-out:hover { color: var(--ink); }
+  .vs-nav-brand { font-family: var(--serif); letter-spacing: -0.02em; color: var(--ink); text-decoration: none; font-size: clamp(0.85rem, 2.5vw, 1.2rem); white-space: nowrap; }
   @media (max-width: 640px) {
     .vs-nav-root { padding: 16px 20px; }
     .vs-nav-hide-mobile { display: none !important; }
@@ -59,8 +61,8 @@ export default function Nav({ backHref, backLabel }: NavProps) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, ease: EASE }}
       >
-        <Link href="/" style={{ fontFamily: 'var(--serif)', fontSize: '1.2rem', letterSpacing: '-0.01em', color: 'var(--ink)', textDecoration: 'none' }}>
-          VibeSec
+        <Link href="/" className="vs-nav-brand">
+          {BRAND_NAME}
         </Link>
 
         <div className="vs-nav-links">

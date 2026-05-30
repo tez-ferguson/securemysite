@@ -14,6 +14,7 @@ import { HeroAnimatedTitle } from '@/components/ui/background-paths'
 import { GLSLHills } from '@/components/ui/glsl-hills'
 import RadialOrbitalTimeline from '@/components/ui/radial-orbital-timeline'
 import { normalizeSiteUrl } from '@/lib/url'
+import { BRAND_NAME } from '@/lib/brand'
 
 type UIState = 'default' | 'email' | 'scanning'
 
@@ -126,6 +127,7 @@ const PAGE_CSS = `
   @media (max-width: 380px) {
     .vs-hero-title { font-size: 1.9rem !important; }
   }
+  .vs-brand-logo { font-size: clamp(0.78rem, 2.5vw, 1.15rem); letter-spacing: -0.02em; white-space: nowrap; }
 `
 
 function ScrollReveal({ children, delay = 0, style }: { children: React.ReactNode; delay?: number; style?: React.CSSProperties }) {
@@ -261,11 +263,12 @@ function HomeInner() {
         }}
       >
         <motion.div
+          className="vs-brand-logo"
           animate={{ color: navDark ? WARM : DARK }}
           transition={{ duration: 0.35 }}
-          style={{ fontFamily: 'var(--serif)', fontSize: '1.25rem', letterSpacing: '-0.01em' }}
+          style={{ fontFamily: 'var(--serif)' }}
         >
-          VibeSec
+          {BRAND_NAME}
         </motion.div>
         <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
           {['How it works', 'What we scan', 'Pricing'].map((label) => {
@@ -513,7 +516,7 @@ function HomeInner() {
                   <em style={{ fontStyle: 'italic', color: '#c0392b' }}>with AI at the wheel.</em>
                 </h2>
                 <p style={{ fontSize: '0.9rem', color: 'var(--ink3)', lineHeight: 1.7, fontWeight: 300, maxWidth: '360px', marginBottom: '36px' }}>
-                  AI coding tools are extraordinary at building features. They are not trained to be security engineers. VibeSec fills that gap — one scan at a time.
+                  AI coding tools are extraordinary at building features. They are not trained to be security engineers. {BRAND_NAME} fills that gap — one scan at a time.
                 </p>
                 <div style={{ position: 'relative', overflow: 'hidden', display: 'inline-block' }}>
                   <motion.div initial={{ scaleX: 0 }} whileHover={{ scaleX: 1 }} transition={{ duration: 0.28, ease: EASE }}
@@ -610,7 +613,7 @@ function HomeInner() {
 
         {/* ── FOOTER ── */}
         <footer style={{ borderTop: '1px solid var(--border)', padding: 'clamp(16px, 3vw, 24px) clamp(16px, 4vw, 48px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-          <div style={{ fontFamily: 'var(--serif)', fontSize: '1rem', color: 'var(--ink)', letterSpacing: '-0.01em' }}>VibeSec</div>
+          <div className="vs-brand-logo" style={{ fontFamily: 'var(--serif)', color: 'var(--ink)' }}>{BRAND_NAME}</div>
           <div style={{ fontSize: '0.7rem', color: 'var(--ink4)', display: 'flex', alignItems: 'center', gap: '6px' }}>
             <span style={{ width: '5px', height: '5px', background: '#5a9e6f', borderRadius: '50%', display: 'inline-block' }} />
             Source code deleted after every scan

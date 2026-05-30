@@ -5,6 +5,7 @@ import { motion } from 'framer-motion'
 import FindingCard from '../../components/FindingCard'
 import { CountUp } from '../../components/motion/CountUp'
 import type { Finding } from '../../types'
+import { BRAND_NAME } from '@/lib/brand'
 
 const EASE = [0.16, 1, 0.3, 1] as const
 
@@ -73,7 +74,7 @@ export default function DemoPage() {
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--sans)' }}>
       {/* Nav */}
       <nav style={{ borderBottom: '1px solid var(--border)', backgroundColor: 'var(--white)', padding: '0 40px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Link href="/" style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', color: 'var(--ink)', textDecoration: 'none' }}>VibeSec</Link>
+        <Link href="/" style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', color: 'var(--ink)', textDecoration: 'none' }}>{BRAND_NAME}</Link>
         <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
           <Link href="/pricing" style={{ color: 'var(--ink2)', fontSize: '0.88rem', textDecoration: 'none' }}>Pricing</Link>
           <Link href="/sign-up" style={{ backgroundColor: 'var(--ink)', color: '#fff', padding: '8px 18px', fontSize: '0.88rem', textDecoration: 'none' }}>

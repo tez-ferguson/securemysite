@@ -12,6 +12,7 @@ import GitHubModal from '@/components/GitHubModal'
 import { CountUp } from '@/components/motion/CountUp'
 import { createBrowserClient } from '@/lib/supabase.client'
 import { encodeGithubInstallState, normalizeSiteUrl } from '@/lib/url'
+import { BRAND_NAME } from '@/lib/brand'
 import type { Finding, SeverityLevel } from '@/types'
 import type { User } from '@supabase/supabase-js'
 
@@ -175,7 +176,7 @@ function ScanReportInner({ token }: { token: string }) {
           }}
         >
           <Link href="/" style={{ fontFamily: 'var(--serif)', fontSize: '1.2rem', color: 'var(--ink)', textDecoration: 'none' }}>
-            VibeSec
+            {BRAND_NAME}
           </Link>
         </nav>
         <PassiveScanWaiting
@@ -251,6 +252,7 @@ function ScanReportInner({ token }: { token: string }) {
   return (
     <>
       <nav
+        className="scan-report-nav"
         style={{
           position: 'sticky',
           top: 0,
@@ -261,15 +263,16 @@ function ScanReportInner({ token }: { token: string }) {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
+          gap: '12px',
         }}
       >
-        <Link href="/" style={{ fontFamily: 'var(--serif)', fontSize: '1.2rem', color: 'var(--ink)', textDecoration: 'none' }}>
-          VibeSec
+        <Link href="/" style={{ fontFamily: 'var(--serif)', fontSize: '1.2rem', color: 'var(--ink)', textDecoration: 'none', flexShrink: 0 }}>
+          {BRAND_NAME}
         </Link>
-        <span style={{ fontSize: '0.8rem', color: 'var(--ink3)' }}>{host}</span>
+        <span className="scan-report-host" style={{ fontSize: '0.8rem', color: 'var(--ink3)' }}>{host}</span>
       </nav>
 
-      <main style={{ maxWidth: '1100px', margin: '0 auto', padding: '48px 24px 80px' }}>
+      <main className="scan-report-inner" style={{ maxWidth: '1100px', margin: '0 auto', padding: '48px 24px 80px' }}>
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -278,7 +281,10 @@ function ScanReportInner({ token }: { token: string }) {
           <p style={{ fontSize: '0.68rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--ink4)', marginBottom: '12px' }}>
             Passive security scan
           </p>
-          <h1 style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2rem, 4vw, 2.8rem)', fontWeight: 400, marginBottom: '8px' }}>
+          <h1
+            className="scan-report-title"
+            style={{ fontFamily: 'var(--serif)', fontSize: 'clamp(2rem, 4vw, 2.8rem)', fontWeight: 400, marginBottom: '8px' }}
+          >
             {data.totalCount} {data.totalCount === 1 ? 'issue' : 'issues'} found
           </h1>
           <p style={{ color: 'var(--ink3)', fontWeight: 300, marginBottom: '32px' }}>
@@ -313,7 +319,7 @@ function ScanReportInner({ token }: { token: string }) {
               style={{ background: '#fff', padding: '20px 24px' }}
             >
               <div style={{ fontSize: '0.72rem', color: 'var(--ink4)', marginBottom: '8px' }}>{label}</div>
-              <div style={{ fontFamily: 'var(--serif)', fontSize: '2rem' }}>
+              <div className="serif-stat" style={{ fontFamily: 'var(--serif)', fontSize: '2rem' }}>
                 <CountUp to={count} duration={0.8} />
               </div>
               <RiskBadge severity={sev} />
@@ -321,16 +327,41 @@ function ScanReportInner({ token }: { token: string }) {
           ))}
         </div>
 
-        <div className="passive-report-layout" style={{ display: 'grid', gridTemplateColumns: paid ? '1fr' : '1fr 320px', gap: '32px', alignItems: 'start' }}>
-          <div>
+        {searchParams.get('payment') === 'cancelled' && !paid && (
+          <p
+            style={{
+              fontFamily: 'var(--sans)',
+              fontSize: '0.85rem',
+              color: 'var(--ink3)',
+              background: '#fff',
+              border: '1px solid #e2deda',
+              padding: '12px 16px',
+              marginBottom: '24px',
+            }}
+          >
+            Checkout cancelled — you can unlock whenever you&apos;re ready.
+          </p>
+        )}
+
+        <div
+          className="passive-report-layout"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: paid ? '1fr' : 'minmax(0, 1fr) minmax(260px, 320px)',
+            gap: '32px',
+            alignItems: 'start',
+          }}
+        >
+          <div className="passive-findings-col" style={{ minWidth: 0 }}>
             {paid && allFindings.length === 0 && (
               <p style={{ color: 'var(--ink3)' }}>No issues detected — great work.</p>
             )}
 
             {!paid && preview && (
               <>
-                <p style={{ fontSize: '0.85rem', color: 'var(--ink3)', marginBottom: '16px' }}>
-                  Preview — unlock to see all {data.totalCount} findings and fix prompts.
+                <p style={{ fontSize: '0.85rem', color: 'var(--ink3)', marginBottom: '16px', lineHeight: 1.5 }}>
+                  Preview of 1 issue — pay $29 to unlock all {data.totalCount}, or connect GitHub in the panel
+                  for a full repository scan.
                 </p>
                 <FindingCard finding={preview} delay={0} />
               </>
@@ -363,11 +394,11 @@ function ScanReportInner({ token }: { token: string }) {
                   Go deeper
                 </p>
                 <h2 style={{ fontFamily: 'var(--serif)', fontSize: '1.5rem', fontWeight: 400, marginBottom: '12px' }}>
-                  Want code-level findings?
+                  Run a full codebase scan
                 </h2>
                 <p style={{ fontSize: '0.9rem', opacity: 0.75, fontWeight: 300, lineHeight: 1.55, marginBottom: '20px', maxWidth: '520px' }}>
-                  Connect your GitHub repo for a deeper scan — we&apos;ll check for exposed secrets,
-                  vulnerable dependencies, and SQL injection in your source code.
+                  You&apos;ve unlocked this site report. Connect GitHub next to scan your repository for
+                  exposed secrets, vulnerable dependencies, and code vulnerabilities across the whole codebase.
                 </p>
                 <button
                   type="button"
@@ -380,6 +411,8 @@ function ScanReportInner({ token }: { token: string }) {
                     fontFamily: 'var(--sans)',
                     fontSize: '0.9rem',
                     cursor: 'pointer',
+                    width: '100%',
+                    maxWidth: '320px',
                   }}
                 >
                   Connect GitHub for code scan →
@@ -393,6 +426,7 @@ function ScanReportInner({ token }: { token: string }) {
               token={token}
               totalCount={data.totalCount}
               criticalCount={data.criticalCount}
+              onConnectGithub={() => setGhModal(true)}
             />
           )}
         </div>

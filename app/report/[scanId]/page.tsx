@@ -6,6 +6,7 @@ import LockedFinding from '../../../components/LockedFinding'
 import PaywallPanel from '../../../components/PaywallPanel'
 import { CountUp } from '../../../components/motion/CountUp'
 import type { Finding, ScanJob, ScanResult, SeverityLevel } from '../../../types'
+import { BRAND_NAME } from '@/lib/brand'
 
 interface ReportPageProps {
   params: { scanId: string }
@@ -187,7 +188,7 @@ export default async function ReportPage({ params }: ReportPageProps) {
               fontWeight: 400,
             }}
           >
-            VibeSec
+            {BRAND_NAME}
           </Link>
           <Link
             href="/dashboard"
@@ -276,7 +277,7 @@ export default async function ReportPage({ params }: ReportPageProps) {
               textDecoration: 'none',
             }}
           >
-            VibeSec
+            {BRAND_NAME}
           </Link>
           <Link
             href="/dashboard"
@@ -362,7 +363,7 @@ export default async function ReportPage({ params }: ReportPageProps) {
         }}
       >
         <Link href="/" style={{ fontFamily: "'Instrument Serif', Georgia, serif", fontSize: '1.1rem', color: '#111010', textDecoration: 'none' }}>
-          VibeSec
+          {BRAND_NAME}
         </Link>
         <Link href="/dashboard" style={{ color: '#444240', fontSize: '0.88rem', textDecoration: 'none' }}>
           ← Dashboard

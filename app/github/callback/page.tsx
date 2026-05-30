@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { normalizeSiteUrl } from '@/lib/url'
 import { createBrowserClient } from '@/lib/supabase.client'
+import { BRAND_NAME } from '@/lib/brand'
 
 const EASE = [0.16, 1, 0.3, 1] as const
 
@@ -138,7 +139,7 @@ function CallbackInner() {
             textDecoration: 'none',
           }}
         >
-          VibeSec
+          {BRAND_NAME}
         </Link>
         <Link href="/" style={{ fontSize: '0.8rem', color: '#888580', textDecoration: 'none' }}>
           ← Home

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { createBrowserClient } from '@/lib/supabase.client'
+import { BRAND_NAME } from '@/lib/brand'
 
 const EASE = [0.16, 1, 0.3, 1] as const
 
@@ -82,7 +83,7 @@ export default function SignUpPage() {
   return (
     <div style={{ minHeight: '100vh', backgroundColor: 'var(--bg)', fontFamily: 'var(--sans)' }}>
       <nav style={{ borderBottom: '1px solid var(--border)', backgroundColor: 'var(--white)', padding: '0 40px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Link href="/" style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', color: 'var(--ink)', textDecoration: 'none' }}>VibeSec</Link>
+        <Link href="/" style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', color: 'var(--ink)', textDecoration: 'none' }}>{BRAND_NAME}</Link>
         <Link href="/sign-in" style={{ color: 'var(--ink2)', fontSize: '0.88rem', textDecoration: 'none' }}>
           Already have an account? Sign in →
         </Link>

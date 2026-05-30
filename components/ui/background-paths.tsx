@@ -68,31 +68,31 @@ interface HeroAnimatedTitleProps {
   line2Accent?: boolean
 }
 
+const TITLE_SPRING = { type: 'spring' as const, stiffness: 180, damping: 28 }
+
+/** Defined at module scope so parent re-renders (e.g. typing in hero input) do not remount letters. */
+function AnimatedWord({ word, baseDelay, accent }: { word: string; baseDelay: number; accent?: boolean }) {
+  return (
+    <span className="inline-block mr-[0.25em] last:mr-0">
+      {word.split('').map((letter, i) => (
+        <motion.span
+          key={i}
+          initial={{ y: 60, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ ...TITLE_SPRING, delay: baseDelay + i * 0.028 }}
+          style={{
+            display: 'inline-block',
+            color: accent ? '#c0392b' : '#f7f5f2',
+          }}
+        >
+          {letter === ' ' ? '\u00A0' : letter}
+        </motion.span>
+      ))}
+    </span>
+  )
+}
+
 export function HeroAnimatedTitle({ line1, line2, line2Accent = true }: HeroAnimatedTitleProps) {
-  const SPRING = { type: 'spring' as const, stiffness: 180, damping: 28 }
-
-  function AnimatedWord({ word, baseDelay, accent }: { word: string; baseDelay: number; accent?: boolean }) {
-    return (
-      <span className="inline-block mr-[0.25em] last:mr-0">
-        {word.split('').map((letter, i) => (
-          <motion.span
-            key={i}
-            initial={{ y: 60, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ ...SPRING, delay: baseDelay + i * 0.028 }}
-            style={{
-              display: 'inline-block',
-              // NO gradient text — solid colour only (impeccable absolute ban)
-              color: accent ? '#c0392b' : '#f7f5f2',
-            }}
-          >
-            {letter === ' ' ? '\u00A0' : letter}
-          </motion.span>
-        ))}
-      </span>
-    )
-  }
-
   const words1 = line1.split(' ')
   const words2 = line2.split(' ')
   const delay1End = words1.reduce((acc, w, wi) => acc + w.length * 0.028 + 0.08, 0)

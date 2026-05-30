@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getUserEmail } from '@/lib/auth'
 import { Resend } from 'resend'
 import { createServiceClient } from '@/lib/supabase'
+import { BRAND_NAME } from '@/lib/brand'
 
 export async function POST(
   req: NextRequest,
@@ -57,11 +58,11 @@ export async function POST(
     if (job?.user_id && process.env.RESEND_API_KEY && process.env.NEXT_PUBLIC_APP_URL) {
       const addr = await getUserEmail(job.user_id)
       if (addr) {
-        const subject = `Your VibeSec scan finished — ${counts.total} vulnerabilities found`
+        const subject = `Your ${BRAND_NAME} scan finished — ${counts.total} vulnerabilities found`
         const label = job.repo_name ?? job.site_url ?? 'your project'
         const reportUrl = `${process.env.NEXT_PUBLIC_APP_URL}/report/${params.scanId}`
         const resend = new Resend(process.env.RESEND_API_KEY)
-        const from = process.env.RESEND_FROM_EMAIL ?? 'VibeSec <onboarding@resend.dev>'
+        const from = process.env.RESEND_FROM_EMAIL ?? `${BRAND_NAME} <onboarding@resend.dev>`
         await resend.emails.send({
           from,
           to: addr,

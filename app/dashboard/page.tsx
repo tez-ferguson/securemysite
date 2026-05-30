@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createServerSupabaseClient, createServiceClient } from '@/lib/supabase'
 import type { ScanJob, SeverityLevel } from '../../types'
 import DashboardRows from '../../components/DashboardRows'
+import { BRAND_NAME } from '@/lib/brand'
 
 function formatDate(iso: string): string {
   const d = new Date(iso)
@@ -160,7 +161,7 @@ export default async function DashboardPage() {
           style={{ borderBottom: '1px solid #e2deda', backgroundColor: '#ffffff', padding: '0 24px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
         >
           <Link href="/" style={{ fontFamily: "'Instrument Serif', Georgia, serif", fontSize: '1.1rem', color: '#111010', textDecoration: 'none' }}>
-            VibeSec
+            {BRAND_NAME}
           </Link>
           <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
             <Link href="/pricing" style={{ color: '#444240', fontSize: '0.85rem', textDecoration: 'none' }}>

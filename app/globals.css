@@ -161,8 +161,50 @@ body {
 
 /* ─── Passive scan report responsive ─────────────────── */
 @media (max-width: 768px) {
-  .report-summary-grid { grid-template-columns: repeat(2, 1fr) !important; }
-  .passive-report-layout { grid-template-columns: 1fr !important; }
+  .scan-report-nav {
+    padding: 12px 16px !important;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .scan-report-host {
+    font-size: 0.72rem !important;
+    max-width: min(100%, 200px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .scan-report-inner {
+    padding: 28px 16px 64px !important;
+  }
+  .scan-report-title {
+    font-size: clamp(1.65rem, 7vw, 2rem) !important;
+  }
+  .report-summary-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  .report-summary-grid > * {
+    padding: 16px 14px !important;
+  }
+  .report-summary-grid .serif-stat {
+    font-size: 1.6rem !important;
+  }
+  .passive-report-layout {
+    grid-template-columns: 1fr !important;
+    gap: 24px !important;
+  }
+  .passive-paywall-col {
+    order: -1;
+  }
+  .passive-paywall-sticky {
+    position: static !important;
+    top: auto !important;
+  }
+  .passive-findings-col {
+    min-width: 0;
+  }
+  .locked-shimmer {
+    padding: 16px !important;
+  }
 }
 
 /* ─── Dashboard responsive ──────────────────────────────── */

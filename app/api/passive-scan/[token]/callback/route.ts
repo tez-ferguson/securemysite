@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
 import { createServiceClient } from '@/lib/supabase'
+import { BRAND_NAME } from '@/lib/brand'
 
 export async function POST(
   req: NextRequest,
@@ -60,12 +61,12 @@ export async function POST(
     if (!failed && row?.email && process.env.RESEND_API_KEY && process.env.NEXT_PUBLIC_APP_URL) {
       const reportUrl = `${process.env.NEXT_PUBLIC_APP_URL}/scan/${params.token}`
       const resend = new Resend(process.env.RESEND_API_KEY)
-      const from = process.env.RESEND_FROM_EMAIL ?? 'VibeSec <onboarding@resend.dev>'
+      const from = process.env.RESEND_FROM_EMAIL ?? `${BRAND_NAME} <onboarding@resend.dev>`
       const label = row.url ?? 'your site'
       await resend.emails.send({
         from,
         to: row.email,
-        subject: `Your VibeSec scan finished — ${counts.total} issues found`,
+        subject: `Your ${BRAND_NAME} scan finished — ${counts.total} issues found`,
         html: `
           <p style="font-family:Georgia, serif; font-size:18px; color:#111010; margin-bottom:14px;">
             Scan complete for <strong>${label}</strong>

@@ -7,6 +7,7 @@ import { createBrowserClient } from '@/lib/supabase.client'
 import type { User } from '@supabase/supabase-js'
 import { PricingSection } from '@/components/ui/pricing'
 import type { PricingPlan } from '@/components/ui/pricing'
+import { BRAND_NAME } from '@/lib/brand'
 
 const EASE = [0.16, 1, 0.3, 1] as const
 
@@ -68,7 +69,7 @@ export default function PricingPage() {
 
       {/* Nav */}
       <nav style={{ borderBottom: '1px solid rgba(247,245,242,0.08)', padding: '0 clamp(16px, 4vw, 40px)', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Link href="/" style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', color: '#f7f5f2', textDecoration: 'none' }}>VibeSec</Link>
+        <Link href="/" style={{ fontFamily: 'var(--serif)', fontSize: '1.1rem', color: '#f7f5f2', textDecoration: 'none' }}>{BRAND_NAME}</Link>
         <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
           {user ? (
             <Link href="/dashboard" style={{ color: 'rgba(247,245,242,0.55)', fontSize: '0.85rem', textDecoration: 'none' }}>Dashboard</Link>
