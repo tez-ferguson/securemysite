@@ -19,8 +19,10 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install Modal
-        run: pip install modal
+      - name: Install dependencies
+        run: |
+          pip install modal
+          pip install -r scanner/requirements.txt
 
       - name: Modal deploy
         working-directory: scanner
@@ -28,5 +30,10 @@ jobs:
           MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
           MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
         run: |
-          modal deploy app.py
+          if [ -z "$MODAL_TOKEN_ID" ] || [ -z "$MODAL_TOKEN_SECRET" ]; then
+            echo "::error::Add MODAL_TOKEN_ID and MODAL_TOKEN_SECRET to GitHub repo Secrets (Settings → Secrets → Actions)."
+            echo "Create tokens at https://modal.com/settings/tokens"
+            exit 1
+          fi
           modal deploy passive.py
+          modal deploy app.py

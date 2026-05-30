@@ -36,8 +36,8 @@ Copy `.env.example` to `.env.local` and fill in each value:
    - Events to listen for: `checkout.session.completed`
 
 ### Modal
-1. Install Modal: `pip install modal`
-2. Authenticate: `modal setup`
+1. Install Modal: `pip install modal` (or use `scanner/.venv` after `python3 -m venv .venv && pip install modal`)
+2. Authenticate: `modal token new`
 3. Create secrets in Modal dashboard:
    - `moonshot-key`: Set `MOONSHOT_API_KEY` (from https://platform.moonshot.ai)
    - `app-callback-secret`: Set `APP_CALLBACK_SECRET` (same value as `SCANNER_CALLBACK_SECRET` in Vercel)
@@ -46,7 +46,11 @@ Copy `.env.example` to `.env.local` and fill in each value:
    .venv/bin/modal deploy app.py
    .venv/bin/modal deploy passive.py
    ```
-5. Copy the function URL to `MODAL_FUNCTION_URL` in your env
+5. Copy the function URLs to env:
+   - Code scanner trigger → `MODAL_FUNCTION_URL`
+   - Passive scanner trigger → `MODAL_PASSIVE_FUNCTION_URL` (from `modal deploy passive.py`)
+
+**GitHub Actions (optional auto-deploy):** In repo Settings → Secrets → Actions, add `MODAL_TOKEN_ID` and `MODAL_TOKEN_SECRET` from [modal.com/settings/tokens](https://modal.com/settings/tokens). Without these, the "Deploy Modal scanner" workflow will fail (local `modal deploy` still works).
 
 ### GitHub App
 1. Go to GitHub Settings → Developer Settings → GitHub Apps → New GitHub App
