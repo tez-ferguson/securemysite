@@ -371,6 +371,29 @@ def check_basic_surface(base_url: str, html: str) -> list[dict]:
         modal.Secret.from_name("app-callback-secret"),
     ],
 )
+def _template_fix(finding: dict) -> str:
+    return (
+        f"Fix the following security issue at {finding['file']}: "
+        f"{finding['description']}. Apply hosting and HTTP security best practices."
+    )
+
+
+def _post_callback(
+    callback_url: str,
+    callback_secret: str,
+    findings: list[dict],
+    counts: dict,
+    *,
+    failed: bool = False,
+) -> None:
+    httpx.post(
+        callback_url,
+        json={"findings": findings, "counts": counts, "failed": failed},
+        headers={"x-scanner-secret": callback_secret},
+        timeout=30,
+    ).raise_for_status()
+
+
 def run_passive_scan(
     token: str,
     url: str,
@@ -379,74 +402,78 @@ def run_passive_scan(
 ) -> dict:
     from llm import generate_fix_prompt
 
-    base = _base_url(url)
-    host = _host_from_url(url)
-    all_findings: list[dict] = []
-
-    all_findings.extend(check_ssl(url))
-    all_findings.extend(check_https_redirect(url))
+    empty_counts = {"total": 0, "critical": 0, "high": 0, "medium": 0, "low": 0}
 
     try:
-        resp = httpx.get(base, timeout=20, follow_redirects=True)
-        headers = resp.headers
-        html = resp.text[:50000]
-        all_findings.extend(check_security_headers(headers))
-        all_findings.extend(check_cookies(headers))
-        all_findings.extend(check_server_leak(headers))
-        all_findings.extend(check_basic_surface(base, html))
+        base = _base_url(url)
+        host = _host_from_url(url)
+        all_findings: list[dict] = []
+
+        all_findings.extend(check_ssl(url))
+        all_findings.extend(check_https_redirect(url))
+
+        try:
+            resp = httpx.get(base, timeout=20, follow_redirects=True)
+            headers = resp.headers
+            html = resp.text[:50000]
+            all_findings.extend(check_security_headers(headers))
+            all_findings.extend(check_cookies(headers))
+            all_findings.extend(check_server_leak(headers))
+            all_findings.extend(check_basic_surface(base, html))
+        except Exception as e:
+            all_findings.append({
+                "type": "connection_error",
+                "severity": "high",
+                "file": "/",
+                "line": 0,
+                "description": f"Could not fetch site: {str(e)[:120]}",
+                "snippet": base,
+            })
+
+        all_findings.extend(check_cors(base))
+        all_findings.extend(check_exposed_files(base))
+        if host:
+            all_findings.extend(check_dns(host))
+        all_findings.extend(check_blacklist(base))
+
+        seen = set()
+        deduped = []
+        for f in all_findings:
+            key = (f["file"], f["type"], f["description"][:60])
+            if key not in seen:
+                seen.add(key)
+                deduped.append(f)
+
+        for finding in deduped:
+            finding["id"] = str(uuid.uuid4())
+            finding["fix_prompt"] = _template_fix(finding)
+
+        # Kimi for top 3 only — keeps scans fast; rest use templates above
+        for finding in deduped[:3]:
+            finding["fix_prompt"] = generate_fix_prompt(finding, context="passive")
+
+        counts = {
+            "total": len(deduped),
+            "critical": sum(1 for f in deduped if f["severity"] == "critical"),
+            "high": sum(1 for f in deduped if f["severity"] == "high"),
+            "medium": sum(1 for f in deduped if f["severity"] == "medium"),
+            "low": sum(1 for f in deduped if f["severity"] == "low"),
+        }
+
+        _post_callback(callback_url, callback_secret, deduped, counts)
+        return {"ok": True, "counts": counts, "token": token}
     except Exception as e:
-        all_findings.append({
-            "type": "connection_error",
-            "severity": "high",
-            "file": "/",
-            "line": 0,
-            "description": f"Could not fetch site: {str(e)[:120]}",
-            "snippet": base,
-        })
-        headers = httpx.Headers()
-
-    all_findings.extend(check_cors(base))
-    all_findings.extend(check_exposed_files(base))
-    if host:
-        all_findings.extend(check_dns(host))
-    all_findings.extend(check_blacklist(base))
-
-    # Deduplicate
-    seen = set()
-    deduped = []
-    for f in all_findings:
-        key = (f["file"], f["type"], f["description"][:60])
-        if key not in seen:
-            seen.add(key)
-            deduped.append(f)
-
-    for finding in deduped:
-        finding["id"] = str(uuid.uuid4())
-
-    for finding in deduped[:10]:
-        finding["fix_prompt"] = generate_fix_prompt(finding, context="passive")
-    for finding in deduped[10:]:
-        finding["fix_prompt"] = (
-            f"Fix the following security issue at {finding['file']}: "
-            f"{finding['description']}. Apply security best practices."
-        )
-
-    counts = {
-        "total": len(deduped),
-        "critical": sum(1 for f in deduped if f["severity"] == "critical"),
-        "high": sum(1 for f in deduped if f["severity"] == "high"),
-        "medium": sum(1 for f in deduped if f["severity"] == "medium"),
-        "low": sum(1 for f in deduped if f["severity"] == "low"),
-    }
-
-    response = httpx.post(
-        callback_url,
-        json={"findings": deduped, "counts": counts},
-        headers={"x-scanner-secret": callback_secret},
-        timeout=30,
-    )
-    response.raise_for_status()
-    return {"ok": True, "counts": counts, "token": token}
+        try:
+            _post_callback(
+                callback_url,
+                callback_secret,
+                [],
+                empty_counts,
+                failed=True,
+            )
+        except Exception:
+            print(f"Passive scan failed and callback failed: {e}")
+        raise
 
 
 @app.function(

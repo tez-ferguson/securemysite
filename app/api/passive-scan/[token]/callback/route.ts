@@ -12,7 +12,7 @@ export async function POST(
   }
 
   const body = await req.json()
-  const { findings, counts } = body as {
+  const { findings, counts, failed } = body as {
     findings: unknown[]
     counts: {
       total: number
@@ -21,6 +21,7 @@ export async function POST(
       medium: number
       low: number
     }
+    failed?: boolean
   }
 
   const supabase = createServiceClient()
@@ -31,11 +32,13 @@ export async function POST(
     .eq('token', params.token)
     .maybeSingle()
 
+  const scanStatus = failed ? 'failed' : 'complete'
+
   const { error: updateError } = await supabase
     .from('passive_scans')
     .update({
-      status: 'complete',
-      findings,
+      status: scanStatus,
+      findings: failed ? [] : findings,
       total_count: counts.total,
       critical_count: counts.critical,
       high_count: counts.high,
@@ -51,7 +54,7 @@ export async function POST(
   }
 
   try {
-    if (row?.email && process.env.RESEND_API_KEY && process.env.NEXT_PUBLIC_APP_URL) {
+    if (!failed && row?.email && process.env.RESEND_API_KEY && process.env.NEXT_PUBLIC_APP_URL) {
       const reportUrl = `${process.env.NEXT_PUBLIC_APP_URL}/scan/${params.token}`
       const resend = new Resend(process.env.RESEND_API_KEY)
       const from = process.env.RESEND_FROM_EMAIL ?? 'VibeSec <onboarding@resend.dev>'

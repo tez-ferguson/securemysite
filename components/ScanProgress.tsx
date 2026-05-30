@@ -178,9 +178,12 @@ export default function ScanProgress({ siteUrl, scanId, onComplete, mode = 'code
   const [statusText, setStatusText] = useState('Preparing scan…')
   const [termLines, setTermLines] = useState<string[]>([])
   const [done, setDone] = useState(false)
+  const [waitingOnServer, setWaitingOnServer] = useState(false)
+  const [showContinue, setShowContinue] = useState(false)
 
   const completedRef = useRef(false)
   const isDemo = scanId === 'demo-123'
+  const maxFakeProgress = 88
 
   // Reset when scanId or mode changes
   useEffect(() => {
@@ -190,6 +193,8 @@ export default function ScanProgress({ siteUrl, scanId, onComplete, mode = 'code
     setStatusText('Preparing scan…')
     setTermLines([])
     setDone(false)
+    setWaitingOnServer(false)
+    setShowContinue(false)
   }, [scanId, mode])
 
   const STATUS_LABELS =
@@ -268,13 +273,24 @@ export default function ScanProgress({ siteUrl, scanId, onComplete, mode = 'code
       timers.push(setTimeout(() => {
         if (completedRef.current) return
         setSteps((prev) => prev.map((s, i) => ({ ...s, state: i <= idx ? 'done' : 'pending' })))
-        setProgress(pct)
+        const capped = Math.min(pct, maxFakeProgress)
+        setProgress(capped)
+        if (idx === DEMO_TIMELINE.length - 1) {
+          setWaitingOnServer(true)
+          setStatusText('Finishing on our servers… (usually under a minute)')
+        }
       }, doneAt * 0.35))
     })
+
+    timers.push(setTimeout(() => {
+      if (!completedRef.current) setShowContinue(true)
+    }, 20000))
 
     function finalize(data: PollPayload) {
       if (completedRef.current) return
       completedRef.current = true
+      setWaitingOnServer(false)
+      setShowContinue(false)
       setSteps(hydrateFinished(data, mode))
       setProgress(100)
       setDone(true)
@@ -296,13 +312,13 @@ export default function ScanProgress({ siteUrl, scanId, onComplete, mode = 'code
         if (data.status === 'complete' || data.status === 'failed') {
           finalize(data)
         } else {
-          setProgress((p) => Math.max(p, data.status === 'queued' ? 8 : Math.min(p + 10, 88)))
+          setProgress((p) => Math.max(p, data.status === 'queued' ? 8 : Math.min(p + 6, maxFakeProgress)))
         }
       } catch { /* network hiccup */ }
     }
 
     timers.push(setTimeout(poll, 500))
-    const interval = window.setInterval(poll, 3000)
+    const interval = window.setInterval(poll, 2000)
 
     return () => { clearInterval(interval); timers.forEach(clearTimeout) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -433,6 +449,41 @@ export default function ScanProgress({ siteUrl, scanId, onComplete, mode = 'code
             )}
           </div>
         </div>
+
+        {showContinue && !done && (
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.35, ease: EASE }}
+            style={{ marginTop: '24px', textAlign: 'center' }}
+          >
+            <p style={{ fontSize: '0.78rem', color: 'var(--ink3)', marginBottom: '12px', lineHeight: 1.5 }}>
+              {waitingOnServer
+                ? 'Checks are done on your site — we’re saving results and writing fix prompts.'
+                : 'Taking longer than usual. You can open your report page while we finish.'}
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                if (!completedRef.current) {
+                  completedRef.current = true
+                  onComplete(scanId)
+                }
+              }}
+              style={{
+                padding: '12px 24px',
+                background: 'var(--ink)',
+                color: '#fff',
+                border: 'none',
+                fontFamily: 'var(--sans)',
+                fontSize: '0.88rem',
+                cursor: 'pointer',
+              }}
+            >
+              View report →
+            </button>
+          </motion.div>
+        )}
       </div>
     </motion.div>
   )

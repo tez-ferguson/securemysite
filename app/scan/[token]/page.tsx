@@ -173,6 +173,19 @@ function ScanReportInner({ token }: { token: string }) {
     )
   }
 
+  if (data.status === 'failed') {
+    return (
+      <main style={{ maxWidth: '560px', margin: '80px auto', padding: '24px', textAlign: 'center' }}>
+        <h1 style={{ fontFamily: 'var(--serif)', fontSize: '1.8rem', marginBottom: '12px' }}>Scan could not finish</h1>
+        <p style={{ color: 'var(--ink3)', lineHeight: 1.55, marginBottom: '24px' }}>
+          The scanner did not return results. This is usually a configuration issue
+          (Modal URL, callback secret, or site URL on the server).
+        </p>
+        <Link href="/" style={{ color: 'var(--ink)' }}>Try again →</Link>
+      </main>
+    )
+  }
+
   const paid = data.paid
   const allFindings = data.findings ?? []
   const preview = data.previewFinding

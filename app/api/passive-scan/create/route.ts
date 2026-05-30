@@ -58,6 +58,11 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     console.error('Passive Modal trigger failed:', err)
     await supabase.from('passive_scans').update({ status: 'failed' }).eq('token', token)
+    const message = err instanceof Error ? err.message : 'Scanner trigger failed'
+    return NextResponse.json(
+      { error: message.includes('MODAL_PASSIVE') ? 'Scanner not configured on server' : 'Could not start scan' },
+      { status: 502 },
+    )
   }
 
   return NextResponse.json({ token })

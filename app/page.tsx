@@ -222,7 +222,12 @@ function HomeInner() {
       })
       const data = await res.json()
       if (!res.ok || !data.token) {
-        alert(data.error ?? 'Could not start scan. Please try again.')
+        const msg = data.error ?? 'Could not start scan. Please try again.'
+        alert(
+          msg.includes('MODAL_PASSIVE') || msg.includes('not configured')
+            ? 'Scan service is not configured yet. Add MODAL_PASSIVE_FUNCTION_URL in Vercel and redeploy.'
+            : msg,
+        )
         setEmailLoading(false)
         return
       }
