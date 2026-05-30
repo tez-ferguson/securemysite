@@ -849,7 +849,7 @@ function HomeInner() {
           <div className="vs-footer-links" style={{ display: 'flex', gap: '20px' }}>
             <a href="#how-it-works" className="vs-footer-link">How it works</a>
             <a href="#what-we-scan" className="vs-footer-link">What we scan</a>
-            <a href="mailto:hello@vibesec.app" className="vs-footer-link">Contact</a>
+            <a href="mailto:agent@ismysitesecure.ai" className="vs-footer-link">Contact</a>
             <Link href="/pricing" className="vs-footer-link">Pricing</Link>
             <Link href="/demo" className="vs-footer-link">Demo</Link>
           </div>

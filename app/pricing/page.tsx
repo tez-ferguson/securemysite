@@ -65,7 +65,7 @@ export default function PricingPage() {
   }, [])
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0e0c0b', fontFamily: 'var(--sans)', color: '#f7f5f2' }}>
+    <div style={{ minHeight: '100vh', background: '#0e0c0b', fontFamily: 'var(--sans)', color: '#f7f5f2', overflowX: 'hidden' }}>
 
       {/* Nav */}
       <nav className="vs-pricing-nav" style={{ borderBottom: '1px solid rgba(247,245,242,0.08)', padding: '0 clamp(12px, 4vw, 40px)', minHeight: '52px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
@@ -83,7 +83,7 @@ export default function PricingPage() {
       </nav>
 
       {/* Page body */}
-      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: 'clamp(48px, 8vw, 96px) clamp(16px, 4vw, 24px) 80px' }}>
+      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: 'clamp(48px, 8vw, 96px) clamp(16px, 4vw, 24px) 80px', width: '100%', boxSizing: 'border-box' }}>
 
         {/* Section label */}
         <motion.div
@@ -101,8 +101,8 @@ export default function PricingPage() {
         {/* Bottom note */}
         <p style={{ textAlign: 'center', marginTop: '36px', fontSize: '0.78rem', color: 'rgba(247,245,242,0.3)', fontWeight: 300 }}>
           Questions?{' '}
-          <a href="mailto:hello@vibesec.app" style={{ color: 'rgba(247,245,242,0.55)', textDecoration: 'underline' }}>
-            hello@vibesec.app
+          <a href="mailto:agent@ismysitesecure.ai" style={{ color: 'rgba(247,245,242,0.55)', textDecoration: 'underline' }}>
+            agent@ismysitesecure.ai
           </a>
         </p>
 
